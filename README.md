@@ -3,7 +3,7 @@
 
 # Haystack bindings for Nodejs OpenTracing API. 
 
-This is Haystack's client library for Nodejs that implements [OpenTracing API 1.0]((https://github.com/opentracing/opentracing-javascript/).
+This is Haystack's client library for Nodejs that implements [OpenTracing API 1.0](https://github.com/opentracing/opentracing-javascript/).
 
 
 ## How to use the library?
@@ -15,7 +15,7 @@ Check our detailed [example](src/examples/) on how to initialize tracer, start a
 
 `make build`
 
-This will create dist/ folder with the compiled js files. 
+This library has been written in typescript, so we first compile them into js files under dist/ folder
 
 ## How to run the example code
 ```bash

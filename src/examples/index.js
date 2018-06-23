@@ -16,28 +16,21 @@
 
 
 /// first do `npm install haystack-client`
-var initTracer = require('haystack-client').initTracer;
-var opentracing = require('opentracing');
+const initTracer = require('../index').initTracer;
+const opentracing = require('opentracing');
+import MyLogger from "./logger";
 
 
-/// setup a logger, you can skip this but note that library wont spit out any errors, warning or info
-var MyLogger = (function () {
-    function MyLogger() {
-    }
-    MyLogger.prototype.debug = function (msg) { console.log(msg); };
-    MyLogger.prototype.info = function (msg) { console.log(msg); };
-    MyLogger.prototype.warn = function (msg) { console.log(msg); };
-    MyLogger.prototype.error = function (msg) { console.log(msg); };
-    return MyLogger;
-}());
-var _logger = new MyLogger();
-
+/// setup a logger. if you skip providing logger to config, the library will not spit any errors, warning or info
+/// you can provide the logger object already configured in your service, provided it has 4 methods defined:
+// debug(msg), info(msg), error(msg), warn(msg)
+const logger = new MyLogger();
 
 
 /// setup the config object required for initializing Tracer
-/// Use `file` dispatcher for local development else you haystack_agent for other environment like prod
-/// commonTags are the tags that are injected in every span emitted by your app.
-var config = {
+/// Use `file` dispatcher for local development else use haystack_agent for environments like prod
+/// commonTags are the tags that are injected in every span emitted by your service.
+const config = {
     serviceName: 'dummy-service',
     commonTags: {
         'dummy-service-version': '0.1.0'
@@ -52,15 +45,15 @@ var config = {
         // agentHost: 'haystack-agent',
         // agentPort: '35000'
     },
-    logger: _logger
+    logger: logger
 };
 
 /// initialize the tracer only once at the time of your service startup
-var tracer = initTracer(config);
+const tracer = initTracer(config);
 
 /// now create a span, for e.g. at the time of incoming REST call.
 /// Make sure to add SPAN_KIND tag. Possible values are 'server' or 'client'.
-var serverSpan = tracer
+const serverSpan = tracer
     .startSpan('dummy-operation')
     .setTag(opentracing.Tags.SPAN_KIND, 'server')
     .setTag(opentracing.Tags.HTTP_METHOD, 'GET');
@@ -77,10 +70,10 @@ var serverSpan = tracer
 */
 
 
-/// now say service is calling downstream app, then you start another span - a client span
+/// now say service is calling downstream service, then you start another span - a client span
 /// since this span is a child of the main serverSpan, so pass it along as `childOf` attribute.
 /// library will setup the traceId, spanId and parentSpanId by itself.
-var clientChildSpan = tracer.startSpan('downstream-service-call', {
+const clientChildSpan = tracer.startSpan('downstream-service-call', {
     childOf: serverSpan,
     tags: {
         'span.kind': 'client' // Note `span.kind` is now `client`
@@ -96,5 +89,8 @@ serverSpan.setTag(opentracing.Tags.ERROR, false);
 /// finish the downstream call span. This will publish the span to either file or haystack-agent
 clientChildSpan.finish();
 
-/// finish the server span at the time it sending the response back to the client
+/// finish the server span when your service is ready to send the response back to upstream
 serverSpan.finish();
+
+/// close the tracer at the time of service shutdown
+tracer.close();
