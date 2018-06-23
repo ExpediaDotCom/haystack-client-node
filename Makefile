@@ -14,7 +14,7 @@ check-node-version:
 .PHONY: build
 build: check-node-version npm_install idl_codegen
 	rm -rf ./dist/
-	tsc
+	tsc -p tsconfig.json
 	cp package.json dist/
 
 .PHONY: idl_codegen
