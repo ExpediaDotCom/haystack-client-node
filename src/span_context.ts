@@ -1,0 +1,76 @@
+/*
+ *  Copyright 2018 Expedia, Inc.
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ */
+
+import Utils from "./utils";
+
+export default class SpanContext {
+    _traceId: string;
+    _spanId: string;
+    _parentSpanId: string;
+    _baggage: any;
+
+    constructor(
+        traceId,
+        spanId,
+        parentSpanId,
+        baggage = {}) {
+        this._traceId = traceId;
+        this._spanId = spanId;
+        this._parentSpanId = parentSpanId;
+        this._baggage = baggage;
+    }
+
+    traceId() {
+        return this._traceId;
+    }
+
+    spanId() {
+        return this._spanId;
+    }
+
+    parentSpanId() {
+        return this._parentSpanId;
+    }
+
+    baggage() {
+        return this._baggage;
+    }
+
+    setTraceId(traceId: string) {
+        this._traceId = traceId;
+    }
+
+    setSpanId(spanId: string) {
+        this._spanId = spanId;
+    }
+
+    setParentSpanId(parentSpanId: string) {
+        this._parentSpanId = parentSpanId;
+    }
+
+    addBaggageItem(key: string, value: any): SpanContext {
+        const newBaggage = Utils.assign(this._baggage, key, value);
+        return new SpanContext(
+            this._traceId,
+            this._spanId,
+            this._parentSpanId,
+            newBaggage);
+    }
+
+    isValid(): boolean {
+        return !!(this._traceId && this._spanId);
+    }
+}

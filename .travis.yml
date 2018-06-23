@@ -1,0 +1,35 @@
+sudo: required
+
+language: node_js
+
+node_js:
+  - "6"
+
+env:
+  global:
+    - BRANCH=${TRAVIS_BRANCH}
+    - TAG=${TRAVIS_TAG}
+    - SHA=${TRAVIS_COMMIT}
+
+cache:
+  directories:
+  - node_modules
+
+script:
+  - make build
+
+before_deploy:
+  - cd dist
+
+deploy:
+  provider: npm
+  email: $HAYSTACK_NPM_EMAIL
+  api_key: $HAYSTACK_NPM_KEY
+  tag: $TRAVIS_TAG
+  on:
+    branch: master
+    tags: true
+
+notifications:
+  email:
+    - haystack-notifications@expedia.com
