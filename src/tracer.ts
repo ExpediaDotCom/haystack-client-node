@@ -30,6 +30,7 @@ declare interface StartSpanFields {
     references?: opentracing.Reference[];
     tags?: any;
     startTime?: number;
+    callerSpanContext?: SpanContext;
 }
 
 export default class Tracer {
@@ -75,7 +76,7 @@ export default class Tracer {
             }
         }
 
-        const ctx = this._createSpanContext(parent);
+        const ctx = this._createSpanContext(parent, fields.callerSpanContext);
         return this._startSpan(operationName, ctx, startTime, references, spanTags);
     }
 
@@ -90,11 +91,14 @@ export default class Tracer {
         return span;
     }
 
-    private _createSpanContext(parent: SpanContext): SpanContext {
+    private _createSpanContext(parent: SpanContext, callerContext: SpanContext): SpanContext {
         if (!parent || !parent.isValid) {
-            const randomId = Utils.randomUUID();
-            const parentBaggage = parent && parent.baggage();
-            return new SpanContext(randomId, randomId, parentBaggage);
+            if (callerContext) {
+                return new SpanContext(callerContext._traceId, callerContext._spanId, callerContext._parentSpanId, callerContext._baggage);
+            } else {
+                const parentBaggage = parent && parent.baggage();
+                return new SpanContext(Utils.randomUUID(), Utils.randomUUID(), parentBaggage);
+            }
         } else {
             return new SpanContext(parent.traceId(), Utils.randomUUID(), parent.spanId(), parent.baggage());
         }

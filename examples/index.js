@@ -54,26 +54,34 @@ const tracer = initTracer(config);
 
 /// now create a span, for e.g. at the time of incoming REST call.
 /// Make sure to add SPAN_KIND tag. Possible values are 'server' or 'client'.
+/// Important: if you are receiving TraceId, SpanId, ParentSpanId in the http headers or message payload of your incoming REST call,
+/// then set it in the callerSpanContext
+
 const serverSpan = tracer
-    .startSpan('dummy-operation')
+    .startSpan('dummy-operation', {
+        callerSpanContext: {
+            _traceId: '1848fadd-fa16-4b3e-8ad1-6d73339bbee7',
+            _spanId: '7a7cc5bf-796e-4527-9b42-13ae5766c6fd',
+            _parentSpanId: 'e96de653-ad6e-4ad5-b437-e81fd9d2d61d'
+        }
+    })
     .setTag(opentracing.Tags.SPAN_KIND, 'server')
     .setTag(opentracing.Tags.HTTP_METHOD, 'GET');
 
+/// Or if you are the root service, skip callerSpanContext and use the following
+
+// const serverSpan = tracer
+//     .startSpan('dummy-operation')
+//     .setTag(opentracing.Tags.SPAN_KIND, 'server')
+//     .setTag(opentracing.Tags.HTTP_METHOD, 'GET');
 
 
-/// Important:
-//  if you are receiving TraceId, SpanId, ParentSpanId in the http headers or message payload of your incoming REST call,
-/// then update the IDs in the span context, else tracer will use the unique TraceId and SpanId.
-/*
-  serverSpan.context().setTraceId(<TRACE ID> );
-  serverSpan.context().setSpanId(<SPAN ID>);
-  serverSpan.context().setParentSpanId(<PARENT SPAN ID>);
-*/
 
 
 /// now say service is calling downstream service, then you start another span - a client span
 /// since this span is a child of the main serverSpan, so pass it along as `childOf` attribute.
 /// library will setup the traceId, spanId and parentSpanId by itself.
+/// You dont need to set the callerSpanContext if you are setting childOf
 const clientChildSpan = tracer.startSpan('downstream-service-call', {
     childOf: serverSpan,
     tags: {
