@@ -53,4 +53,8 @@ export default class Utils {
         // return in micro seconds
         return Date.now() * 1000;
     }
+
+    static isFloatType(value: number): boolean {
+        return (value % 1 !== 0);
+    }
 }

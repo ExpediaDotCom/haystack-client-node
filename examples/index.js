@@ -15,16 +15,17 @@
  */
 
 
-/// first do `npm install haystack-client`
-const initTracer = require('../index').initTracer;
-const opentracing = require('opentracing');
-import MyLogger from "./logger";
+"use strict";
 
+/// first do `npm install haystack-client`
+const initTracer = require('../dist/index').initTracer;
+const opentracing = require('opentracing');
+const MyLogger = require('./logger');
 
 /// setup a logger. if you skip providing logger to config, the library will not spit any errors, warning or info
 /// you can provide the logger object already configured in your service, provided it has 4 methods defined:
 // debug(msg), info(msg), error(msg), warn(msg)
-const logger = new MyLogger();
+const logger = new MyLogger.default();
 
 
 /// setup the config object required for initializing Tracer
@@ -42,7 +43,7 @@ const config = {
         // or
 
         // type: 'haystack_agent',
-        // agentHost: 'haystack-agent',
+        // agentHost: '192.168.99.100',
         // agentPort: '35000'
     },
     logger: logger
@@ -82,9 +83,11 @@ const clientChildSpan = tracer.startSpan('downstream-service-call', {
 
 
 /// add more tags or logs to your spans
-clientChildSpan.setTag(opentracing.Tags.ERROR, false);
-serverSpan.setTag(opentracing.Tags.ERROR, false);
+clientChildSpan.setTag(opentracing.Tags.ERROR, true);
+clientChildSpan.setTag(opentracing.Tags.HTTP_STATUS_CODE, 503);
 
+serverSpan.setTag(opentracing.Tags.ERROR, true);
+serverSpan.setTag('my-custom-tag', 10.5);
 
 /// finish the downstream call span. This will publish the span to either file or haystack-agent
 clientChildSpan.finish();
@@ -93,4 +96,6 @@ clientChildSpan.finish();
 serverSpan.finish();
 
 /// close the tracer at the time of service shutdown
-tracer.close();
+setTimeout(() => {
+    tracer.close();
+}, 3000);

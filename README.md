@@ -8,7 +8,7 @@ This is Haystack's client library for Nodejs that implements [OpenTracing API 1.
 
 ## How to use the library?
 
-Check our detailed [example](src/examples/) on how to initialize tracer, start a span and send it to one of the dispatchers.
+Check our detailed [example](examples/index.js) on how to initialize tracer, start a span and send it to one of the dispatchers.
 
 
 ## How to build this library?

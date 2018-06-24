@@ -33,5 +33,5 @@ npm_install:
 example: build
 	mkdir -p logs
 	rm -rf logs/spans
-	node dist/examples/index.js
+	node examples/index.js
 	cat logs/spans

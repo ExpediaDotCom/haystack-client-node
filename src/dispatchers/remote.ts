@@ -20,12 +20,14 @@ const services  = require("../proto_idl_codegen/agent/spanAgent_grpc_pb");
 import {Dispatcher} from "./dispatcher";
 import Span from "../span";
 import NullLogger from "../logger";
+import Utils from "../utils";
 
 export default class RemoteDispatcher implements Dispatcher {
     _client: any;
     _logger: any;
 
     constructor(agentHost: string, agentPort: number, logger = new NullLogger()) {
+        logger.info(`Initializing the remote dispatcher, connecting at ${agentHost}:${agentPort}`);
         this._client = new services.SpanAgentClient(`${agentHost}:${agentPort}`, grpc.credentials.createInsecure());
         this._logger = logger;
     }
@@ -68,7 +70,7 @@ export default class RemoteDispatcher implements Dispatcher {
         span.logs().forEach(log => {
             const protoLog = new messages.Log();
             const protoLogTags = [];
-            protoLog.tags.forEach(tag => {
+            log.tags.forEach(tag => {
                 protoLogTags.push(this._createProtoTag(tag));
             });
             protoLog.setTimestamp(log.timestamp);
@@ -86,8 +88,13 @@ export default class RemoteDispatcher implements Dispatcher {
 
         const tagValue = tag.value;
         if (typeof tagValue === "number") {
-            protoTag.setVlong(tagValue);
-            protoTag.setType(messages.Tag.TagType.LONG);
+            if (Utils.isFloatType(tagValue)) {
+                protoTag.setVdouble(tagValue);
+                protoTag.setType(messages.Tag.TagType.DOUBLE);
+            } else {
+                protoTag.setVlong(tagValue);
+                protoTag.setType(messages.Tag.TagType.LONG);
+            }
         } else if (typeof tagValue === "boolean") {
             protoTag.setVbool(tagValue);
             protoTag.setType(messages.Tag.TagType.BOOL);
