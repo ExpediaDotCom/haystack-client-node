@@ -14,22 +14,21 @@
  *       limitations under the License.
  */
 
-import Span from "../span";
-import {Dispatcher} from "./dispatcher";
+import Span from '../span';
+import {Dispatcher} from './dispatcher';
 
 export default class NoopDispatcher implements Dispatcher {
     constructor() {}
 
-    name() {
-        return "NoopDispatcher";
+    name(): string {
+        return 'NoopDispatcher';
     }
 
-    dispatch(span: Span) { }
+    dispatch(span: Span): void { }
 
-    close(callback: () => void) {
+    close(callback: () => void): void {
         if (callback) {
             callback();
         }
     }
 }
-

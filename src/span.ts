@@ -14,10 +14,11 @@
  *       limitations under the License.
  */
 
-import * as opentracing from "opentracing";
-import SpanContext from "./span_context";
-import Utils from "./utils";
-import Tracer from "./tracer";
+import SpanContext from './span_context';
+import Tracer from './tracer';
+import Utils from './utils';
+
+import * as opentracing from 'opentracing';
 
 export default class Span {
     _tracer: Tracer;
@@ -25,16 +26,16 @@ export default class Span {
     _spanContext: SpanContext;
     _startTime: number;
     _duration: number;
-    _references: Array<opentracing.Reference>;
-    _logs: Array<opentracing.LogData>;
-    _tags: Array<opentracing.Tag>;
+    _references: opentracing.Reference[];
+    _logs: opentracing.LogData[];
+    _tags: opentracing.Tag[];
     _isFinished: boolean;
 
     constructor(tracer: Tracer,
                 operationName: string,
                 spanContext: SpanContext,
                 startTime: number,
-                references: Array<opentracing.Reference>) {
+                references: opentracing.Reference[]) {
         this._tracer = tracer;
         this._operationName = operationName;
         this._spanContext = spanContext;
@@ -45,100 +46,100 @@ export default class Span {
         this._isFinished = false;
     }
 
-    operationName() {
+    operationName(): string {
         return this._operationName;
     }
 
-    serviceName() {
+    serviceName(): string {
         return this._tracer._serviceName;
     }
 
-    context() {
+    context(): SpanContext {
         return this._spanContext;
     }
 
-    tags() {
+    tags(): opentracing.Tag[] {
         return this._tags;
     }
 
-    logs() {
+    logs(): opentracing.LogData[] {
         return this._logs;
     }
 
-    startTime() {
+    startTime(): number {
         return this._startTime;
     }
 
-    duration() {
+    duration(): number {
         return this._duration;
     }
 
-    tracer() {
+    tracer(): Tracer {
         return this._tracer;
     }
 
-    setOperationName(name) {
+    setOperationName(name): Span {
         this._operationName = name;
         return this;
     }
 
     addTags(keyValues: any): Span {
-        for (let k in keyValues) {
-            if(keyValues.hasOwnProperty(k)) {
+        for (const k in keyValues) {
+            if (keyValues.hasOwnProperty(k)) {
                 this.setTag(k, keyValues[k]);
             }
         }
         return this;
     }
 
-    setTag(key: string, value: any): Span {
-        this._tags.push({ key: key, value: value });
+    setTag(k: string, v: any): Span {
+        this._tags.push({ key: k, value: v });
         return this;
     }
 
     setBaggageItem(key: string, value: string): Span {
-        let prevBaggageValue = this._spanContext.baggage[key];
+        const prevBaggageValue = this._spanContext.baggage[key];
         this._logFields(key, value, prevBaggageValue);
         this._spanContext.addBaggageItem(key, value);
         return this;
     }
 
     log(keyValuePairs: any, timestamp?: number): void {
-        let tags = [];
-        for (let key in keyValuePairs) {
-            if (keyValuePairs.hasOwnProperty(key)) {
-                tags.push({key: key, value: keyValuePairs[key]});
+        const _tags = [];
+        for (const k in keyValuePairs) {
+            if (keyValuePairs.hasOwnProperty(k)) {
+                _tags.push({key: k, value: keyValuePairs[k]});
             }
         }
         this._logs.push({
             timestamp: timestamp || Utils.now(),
-            tags: tags
+            tags: _tags
         });
     }
 
-    logEvent(eventName: string, payload: any): void {
+    logEvent(eventName: string, payLoad: any): void {
         return this.log({
             event: eventName,
-            payload: payload,
+            payload: payLoad
         });
     }
 
     finish(finishTime?: number): void {
         if (this._isFinished) {
-            let spanInfo = `operation=${this.operationName},context=${this.context().toString()}`;
+            const spanInfo = `operation=${this.operationName},context=${this.context().toString()}`;
             throw new Error(`cant finish the same span twice - ${spanInfo}`);
         }
-        let endTime = finishTime || Utils.now();
+        const endTime = finishTime || Utils.now();
         this._duration = endTime - this._startTime;
         this._tracer.dispatcher().dispatch(this);
         this._isFinished = true;
     }
 
-    private _logFields(key: string, value: string, prevBaggageValue: string) {
-        let fields: { [key: string]: string } = {
+    private _logFields(k: string, v: string, prevBaggageValue: string): void {
+        const fields: { [key: string]: string } = {
             event: 'baggage',
-            key: key,
-            value: value,
+            key: k,
+            value: v
         };
         if (prevBaggageValue) {
             fields.override = 'true';
@@ -146,15 +147,15 @@ export default class Span {
         this.log(fields);
     }
 
-    toString() {
+    toString(): string {
         return JSON.stringify(
             Utils.merge(this._spanContext, {
-                'serviceName': this.serviceName(),
-                'operationName': this._operationName,
-                'tags': this._tags,
-                'logs': this._logs,
-                'startTime': this._startTime,
-                'duration': this._duration,
+                serviceName: this.serviceName(),
+                operationName: this._operationName,
+                tags: this._tags,
+                logs: this._logs,
+                startTime: this._startTime,
+                duration: this._duration
             }));
     }
 }

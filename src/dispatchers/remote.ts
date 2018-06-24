@@ -14,37 +14,39 @@
  *       limitations under the License.
  */
 
-import * as grpc from "grpc";
-const messages  = require("../proto_idl_codegen/span_pb");
-const services  = require("../proto_idl_codegen/agent/spanAgent_grpc_pb");
-import {Dispatcher} from "./dispatcher";
-import Span from "../span";
-import NullLogger from "../logger";
+import * as grpc from 'grpc';
+const messages  = require('../proto_idl_codegen/span_pb');
+const services  = require('../proto_idl_codegen/agent/spanAgent_grpc_pb');
+import {Dispatcher} from './dispatcher';
+import Span from '../span';
+import NullLogger from '../logger';
+import Utils from '../utils';
 
 export default class RemoteDispatcher implements Dispatcher {
     _client: any;
     _logger: any;
 
     constructor(agentHost: string, agentPort: number, logger = new NullLogger()) {
+        logger.info(`Initializing the remote dispatcher, connecting at ${agentHost}:${agentPort}`);
         this._client = new services.SpanAgentClient(`${agentHost}:${agentPort}`, grpc.credentials.createInsecure());
         this._logger = logger;
     }
 
     name(): string {
-        return "RemoteDispatcher";
+        return 'RemoteDispatcher';
     }
 
     dispatch(span: Span): void {
         const proto = this._convertToProtoSpan(span);
         this._client.dispatch(proto, (err, response) => {
-            if(this._logger) {
+            if (this._logger) {
                 if (err) {
                     this._logger.error(`Fail to dispatch span to haystack-agent ${err.toString()}`);
                 } else {
                     this._logger.debug(`grpc response code from haystack-agent - ${response.getCode()}`);
                 }
             }
-        })
+        });
     }
 
     private _convertToProtoSpan(span: Span): any {
@@ -68,7 +70,7 @@ export default class RemoteDispatcher implements Dispatcher {
         span.logs().forEach(log => {
             const protoLog = new messages.Log();
             const protoLogTags = [];
-            protoLog.tags.forEach(tag => {
+            log.tags.forEach(tag => {
                 protoLogTags.push(this._createProtoTag(tag));
             });
             protoLog.setTimestamp(log.timestamp);
@@ -85,10 +87,15 @@ export default class RemoteDispatcher implements Dispatcher {
         protoTag.setKey(tag.key);
 
         const tagValue = tag.value;
-        if (typeof tagValue === "number") {
-            protoTag.setVlong(tagValue);
-            protoTag.setType(messages.Tag.TagType.LONG);
-        } else if (typeof tagValue === "boolean") {
+        if (typeof tagValue === 'number') {
+            if (Utils.isFloatType(tagValue)) {
+                protoTag.setVdouble(tagValue);
+                protoTag.setType(messages.Tag.TagType.DOUBLE);
+            } else {
+                protoTag.setVlong(tagValue);
+                protoTag.setType(messages.Tag.TagType.LONG);
+            }
+        } else if (typeof tagValue === 'boolean') {
             protoTag.setVbool(tagValue);
             protoTag.setType(messages.Tag.TagType.BOOL);
         } else {

@@ -12,10 +12,14 @@ check-node-version:
 	@$(MIN_NODE_VER_FOUND) || echo Build requires minimum Node $(MIN_NODE_VER).x
 
 .PHONY: build
-build: check-node-version npm_install idl_codegen
+build: check-node-version npm_install idl_codegen tslint
 	rm -rf ./dist/
 	tsc -p tsconfig.json
 	cp package.json dist/
+
+.PHONY: tslnt
+tslint:
+	$(shell ./node_modules/tslint/bin/tslint -t msbuild -c tslint.json 'src/**/*.ts')
 
 .PHONY: idl_codegen
 idl_codegen:
@@ -33,5 +37,5 @@ npm_install:
 example: build
 	mkdir -p logs
 	rm -rf logs/spans
-	node dist/examples/index.js
+	node examples/index.js
 	cat logs/spans

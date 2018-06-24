@@ -23,7 +23,7 @@ export default class Utils {
 
     static assign(origObject, key, value): any {
         const newObject = {};
-        for(let k in origObject) {
+        for (const k in origObject) {
             if (origObject.hasOwnProperty(k)) {
                 newObject[k] = origObject[k];
             }
@@ -34,13 +34,13 @@ export default class Utils {
 
     static merge(origObject, mergeObj): any {
         const newObject = {};
-        for(let k in origObject) {
+        for (const k in origObject) {
             if (origObject.hasOwnProperty(k)) {
                 newObject[k] = origObject[k];
             }
         }
 
-        for(let k in mergeObj) {
+        for (const k in mergeObj) {
             if (mergeObj.hasOwnProperty(k)) {
                 newObject[k] = mergeObj[k];
             }
@@ -52,5 +52,9 @@ export default class Utils {
     static now(): number {
         // return in micro seconds
         return Date.now() * 1000;
+    }
+
+    static isFloatType(value: number): boolean {
+        return (value % 1 !== 0);
     }
 }

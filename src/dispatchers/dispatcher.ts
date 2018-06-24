@@ -14,10 +14,10 @@
  *       limitations under the License.
  */
 
-import Span from "../span";
+import Span from '../span';
 
 export interface Dispatcher {
-    name(): string
-    dispatch(span: Span): void
-    close(callback: () => void): void
+    name(): string;
+    dispatch(span: Span): void;
+    close(callback: () => void): void;
 }

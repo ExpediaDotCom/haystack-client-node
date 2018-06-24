@@ -14,22 +14,24 @@
  *       limitations under the License.
  */
 
-export default class MyLogger {
-    constructor() {}
+"use strict";
 
-    debug(message) {
-        console.log(message);
+const MyLogger = (function () {
+    function MyLogger() {
     }
+    MyLogger.prototype.debug = function (message) {
+        console.log(message);
+    };
+    MyLogger.prototype.info = function (message) {
+        console.log(message);
+    };
+    MyLogger.prototype.warn = function (message) {
+        console.log(message);
+    };
+    MyLogger.prototype.error = function (message) {
+        console.log(message);
+    };
+    return MyLogger;
+}());
 
-    info(message) {
-        console.log(message);
-    }
-
-    warn(message) {
-        console.log(message);
-    }
-
-    error(message) {
-        console.log(message);
-    }
-}
+exports.default = MyLogger;

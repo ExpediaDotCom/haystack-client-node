@@ -14,25 +14,25 @@
  *       limitations under the License.
  */
 
-import Span from "../span";
-import {Dispatcher} from "./dispatcher";
+import Span from '../span';
+import {Dispatcher} from './dispatcher';
 
 export default class InMemoryDispatcher implements Dispatcher {
-    _spans: Array<Span>;
+    _spans: Span[];
 
     constructor() {
         this._spans = [];
     }
 
-    name() {
-        return "InMemoryDispatcher";
+    name(): string {
+        return 'InMemoryDispatcher';
     }
 
-    dispatch(span: Span) {
+    dispatch(span: Span): void {
         this._spans.push(span);
     }
 
-    close(callback: () => void) {
+    close(callback: () => void): void {
         if (callback) {
             callback();
         }

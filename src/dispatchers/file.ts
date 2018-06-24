@@ -14,34 +14,33 @@
  *       limitations under the License.
  */
 
-import * as fs from "fs";
-import Span from "../span";
-import {Dispatcher} from "./dispatcher";
+import * as fs from 'fs';
+import Span from '../span';
+import {Dispatcher} from './dispatcher';
 
 export default class FileDispatcher implements Dispatcher {
     _spanFileStream: fs.WriteStream;
 
     constructor(_filePath: string) {
-        if(!_filePath) {
+        if (!_filePath) {
             throw new Error(`Fail to create file dispatcher without valid 'filePath' in the config`);
         }
-        this._spanFileStream = fs.createWriteStream(_filePath, { 'flags': 'a' });
+        this._spanFileStream = fs.createWriteStream(_filePath, { flags: 'a' });
     }
 
-    name() {
-        return "FileDispatcher";
+    name(): string {
+        return 'FileDispatcher';
     }
 
-    dispatch(span: Span) {
+    dispatch(span: Span): void {
         this._spanFileStream.write(span.toString());
-        this._spanFileStream.write("\n");
+        this._spanFileStream.write('\n');
     }
 
-    close(callback: () => void) {
-        this._spanFileStream.end("\n");
+    close(callback: () => void): void {
+        this._spanFileStream.end('\n');
         if (callback) {
             callback();
         }
     }
 }
-

@@ -14,18 +14,17 @@
  *       limitations under the License.
  */
 
+import SpanContext from './span_context';
+import Span from './span';
+import Tracer from './tracer';
 
-import SpanContext from "./span_context";
-import Span from "./span";
-import Tracer from "./tracer";
+import NoopDispatcher from './dispatchers/noop';
+import InMemoryDispatcher from './dispatchers/in_memory';
+import FileDispatcher from './dispatchers/file';
+import AgentDispatcher from './dispatchers/remote';
+import Configuration from './configuration';
 
-import NoopDispatcher from "./dispatchers/noop";
-import InMemoryDispatcher from "./dispatchers/in_memory";
-import FileDispatcher from "./dispatchers/file";
-import AgentDispatcher from "./dispatchers/remote";
-import Configuration from "./configuration";
-
-import * as opentracing from "opentracing";
+import * as opentracing from 'opentracing';
 
 module.exports = {
     Configuration,
@@ -33,11 +32,9 @@ module.exports = {
     SpanContext,
     Span,
     Tracer,
-
     NoopDispatcher,
     InMemoryDispatcher,
     FileDispatcher,
     AgentDispatcher,
-
-    opentracing,
+    opentracing
 };
