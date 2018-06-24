@@ -13,28 +13,23 @@
  *       See the License for the specific language governing permissions and
  *       limitations under the License.
  */
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var uuidv4 = require("uuid/v4");
-var Utils = (function () {
-    function Utils() {
+
+export default class MyLogger {
+    constructor() {}
+
+    debug(message) {
+        console.log(message);
     }
-    Utils.randomUUID = function () {
-        return uuidv4();
-    };
-    Utils.extend = function (origObject, key, value) {
-        var newObject = {};
-        for (var k in origObject) {
-            if (origObject.hasOwnProperty(k)) {
-                newObject[k] = origObject[k];
-            }
-        }
-        newObject[key] = value;
-        return newObject;
-    };
-    Utils.now = function () {
-        return Date.now();
-    };
-    return Utils;
-}());
-exports.default = Utils;
+
+    info(message) {
+        console.log(message);
+    }
+
+    warn(message) {
+        console.log(message);
+    }
+
+    error(message) {
+        console.log(message);
+    }
+}

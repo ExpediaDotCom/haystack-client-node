@@ -109,7 +109,9 @@ export default class Tracer {
 
     close() {
         this._dispatcher.close(() => {
-            this._logger.log('Tracer has been closed now.');
+            if(this._logger) {
+                this._logger.info('Tracer has been closed now.');
+            }
         });
     }
 

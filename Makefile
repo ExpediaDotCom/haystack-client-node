@@ -29,3 +29,9 @@ idl_codegen:
 .PHONY: npm_install
 npm_install:
 	npm install
+
+example: build
+	mkdir -p logs
+	rm -rf logs/spans
+	node dist/examples/index.js
+	cat logs/spans
