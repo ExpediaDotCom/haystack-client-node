@@ -17,7 +17,7 @@
 
 "use strict";
 
-/// first do `npm install haystack-client`
+/// first do `npm install haystack-client` and replace '../dist/index' with 'haystack-client'
 const initTracer = require('../dist/index').initTracer;
 const opentracing = require('opentracing');
 const MyLogger = require('./logger');
