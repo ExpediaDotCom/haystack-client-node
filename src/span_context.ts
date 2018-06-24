@@ -14,7 +14,7 @@
  *       limitations under the License.
  */
 
-import Utils from "./utils";
+import Utils from './utils';
 
 export default class SpanContext {
     _traceId: string;
@@ -33,31 +33,31 @@ export default class SpanContext {
         this._baggage = baggage;
     }
 
-    traceId() {
+    traceId(): string {
         return this._traceId;
     }
 
-    spanId() {
+    spanId(): string {
         return this._spanId;
     }
 
-    parentSpanId() {
+    parentSpanId(): string {
         return this._parentSpanId;
     }
 
-    baggage() {
+    baggage(): any {
         return this._baggage;
     }
 
-    setTraceId(traceId: string) {
+    setTraceId(traceId: string): void {
         this._traceId = traceId;
     }
 
-    setSpanId(spanId: string) {
+    setSpanId(spanId: string): void {
         this._spanId = spanId;
     }
 
-    setParentSpanId(parentSpanId: string) {
+    setParentSpanId(parentSpanId: string): void {
         this._parentSpanId = parentSpanId;
     }
 

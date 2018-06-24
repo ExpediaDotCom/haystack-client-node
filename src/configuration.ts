@@ -14,16 +14,16 @@
  *       limitations under the License.
  */
 
-import FileDispatcher from "./dispatchers/file";
-import RemoteDispatcher from "./dispatchers/remote";
-import {Dispatcher} from "./dispatchers/dispatcher";
-import InMemoryDispatcher from "./dispatchers/in_memory";
-import NoopDispatcher from "./dispatchers/noop";
+import FileDispatcher from './dispatchers/file';
+import RemoteDispatcher from './dispatchers/remote';
+import {Dispatcher} from './dispatchers/dispatcher';
+import InMemoryDispatcher from './dispatchers/in_memory';
+import NoopDispatcher from './dispatchers/noop';
 
 export default class Configuration {
     static _getDispatcher(config): Dispatcher {
 
-        let dispatcher = config.dispatcher;
+        const dispatcher = config.dispatcher;
         if (dispatcher) {
             switch (dispatcher.type) {
                 case 'file':

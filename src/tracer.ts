@@ -14,22 +14,23 @@
  *       limitations under the License.
  */
 
-import * as opentracing from "opentracing";
-import NullLogger from "./logger";
-import Span from "./span";
-import SpanContext from "./span_context";
-import Utils from "./utils";
-import NoopDispatcher from "./dispatchers/noop";
-import {Dispatcher} from "./dispatchers/dispatcher";
-import Configuration from "./configuration";
+import * as opentracing from 'opentracing';
+
+import Configuration from './configuration';
+import {Dispatcher} from './dispatchers/dispatcher';
+import Span from './span';
+import SpanContext from './span_context';
+import NoopDispatcher from './dispatchers/noop';
+import NullLogger from './logger';
+import Utils from './utils';
 
 // startSpanFields is used for type-checking the Trace.startSpan().
-declare type StartSpanFields = {
-    childOf?: SpanContext,
-    references?: Array <opentracing.Reference>,
-    tags?: any,
-    startTime?: number,
-};
+declare interface StartSpanFields {
+    childOf?: SpanContext;
+    references?: opentracing.Reference[];
+    tags?: any;
+    startTime?: number;
+}
 
 export default class Tracer {
     _serviceName: string;
@@ -49,9 +50,9 @@ export default class Tracer {
 
     startSpan(operationName: string, fields?: StartSpanFields): Span {
         fields = fields || {};
-        let references = fields.references || [];
-        let spanTags = fields.tags || {};
-        let startTime = fields.startTime || Utils.now();
+        const references = fields.references || [];
+        const spanTags = fields.tags || {};
+        const startTime = fields.startTime || Utils.now();
 
         let followsFromIsParent = false;
         let parent = fields.childOf instanceof Span ? fields.childOf.context() : fields.childOf;
@@ -59,7 +60,7 @@ export default class Tracer {
         // If there is no childOf in fields, then look into the references
         if (!parent) {
             for (let i = 0; i < references.length; i++) {
-                let ref = references[i];
+                const ref = references[i];
                 if (ref.type() === opentracing.REFERENCE_CHILD_OF) {
                     if (!parent || followsFromIsParent) {
                         parent = ref.referencedContext();
@@ -81,8 +82,8 @@ export default class Tracer {
     private _startSpan(operationName: string,
                        ctx: SpanContext,
                        startTime: number,
-                       references: Array<opentracing.Reference>,
-                       spanTags: any) {
+                       references: opentracing.Reference[],
+                       spanTags: any): Span {
         const span = new Span(this, operationName, ctx, startTime, references);
         span.addTags(this._commonTags)
             .addTags(spanTags);
@@ -91,31 +92,31 @@ export default class Tracer {
 
     private _createSpanContext(parent: SpanContext): SpanContext {
         if (!parent || !parent.isValid) {
-            let randomId = Utils.randomUUID();
-            let parentBaggage = parent && parent.baggage();
+            const randomId = Utils.randomUUID();
+            const parentBaggage = parent && parent.baggage();
             return new SpanContext(randomId, randomId, parentBaggage);
         } else {
             return new SpanContext(parent.traceId(), Utils.randomUUID(), parent.spanId(), parent.baggage());
         }
     }
 
-    serviceName() {
+    serviceName(): string {
         return this._serviceName;
     }
 
-    dispatcher() {
+    dispatcher(): Dispatcher {
         return this._dispatcher;
     }
 
-    close() {
+    close(): void {
         this._dispatcher.close(() => {
-            if(this._logger) {
+            if (this._logger) {
                 this._logger.info('Tracer has been closed now.');
             }
         });
     }
 
-    static initTracer(config) {
+    static initTracer(config): Tracer {
         if (config.disable) {
             return new opentracing.Tracer();
         }

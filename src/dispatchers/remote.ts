@@ -14,13 +14,13 @@
  *       limitations under the License.
  */
 
-import * as grpc from "grpc";
-const messages  = require("../proto_idl_codegen/span_pb");
-const services  = require("../proto_idl_codegen/agent/spanAgent_grpc_pb");
-import {Dispatcher} from "./dispatcher";
-import Span from "../span";
-import NullLogger from "../logger";
-import Utils from "../utils";
+import * as grpc from 'grpc';
+const messages  = require('../proto_idl_codegen/span_pb');
+const services  = require('../proto_idl_codegen/agent/spanAgent_grpc_pb');
+import {Dispatcher} from './dispatcher';
+import Span from '../span';
+import NullLogger from '../logger';
+import Utils from '../utils';
 
 export default class RemoteDispatcher implements Dispatcher {
     _client: any;
@@ -33,20 +33,20 @@ export default class RemoteDispatcher implements Dispatcher {
     }
 
     name(): string {
-        return "RemoteDispatcher";
+        return 'RemoteDispatcher';
     }
 
     dispatch(span: Span): void {
         const proto = this._convertToProtoSpan(span);
         this._client.dispatch(proto, (err, response) => {
-            if(this._logger) {
+            if (this._logger) {
                 if (err) {
                     this._logger.error(`Fail to dispatch span to haystack-agent ${err.toString()}`);
                 } else {
                     this._logger.debug(`grpc response code from haystack-agent - ${response.getCode()}`);
                 }
             }
-        })
+        });
     }
 
     private _convertToProtoSpan(span: Span): any {
@@ -87,7 +87,7 @@ export default class RemoteDispatcher implements Dispatcher {
         protoTag.setKey(tag.key);
 
         const tagValue = tag.value;
-        if (typeof tagValue === "number") {
+        if (typeof tagValue === 'number') {
             if (Utils.isFloatType(tagValue)) {
                 protoTag.setVdouble(tagValue);
                 protoTag.setType(messages.Tag.TagType.DOUBLE);
@@ -95,7 +95,7 @@ export default class RemoteDispatcher implements Dispatcher {
                 protoTag.setVlong(tagValue);
                 protoTag.setType(messages.Tag.TagType.LONG);
             }
-        } else if (typeof tagValue === "boolean") {
+        } else if (typeof tagValue === 'boolean') {
             protoTag.setVbool(tagValue);
             protoTag.setType(messages.Tag.TagType.BOOL);
         } else {
