@@ -83,6 +83,9 @@ export default class Span {
         return this;
     }
 
+    isFinished(): boolean {
+        return this._isFinished;
+    }
     addTags(keyValues: any): Span {
         for (const k in keyValues) {
             if (keyValues.hasOwnProperty(k)) {

@@ -19,6 +19,8 @@
 
 /// first do `npm install haystack-client` and replace '../dist/index' with 'haystack-client'
 const initTracer = require('../dist/index').initTracer;
+const SpanContext = require('../dist/index').SpanContext;
+
 const opentracing = require('opentracing');
 const MyLogger = require('./logger');
 
@@ -59,11 +61,10 @@ const tracer = initTracer(config);
 
 const serverSpan = tracer
     .startSpan('dummy-operation', {
-        callerSpanContext: {
-            _traceId: '1848fadd-fa16-4b3e-8ad1-6d73339bbee7',
-            _spanId: '7a7cc5bf-796e-4527-9b42-13ae5766c6fd',
-            _parentSpanId: 'e96de653-ad6e-4ad5-b437-e81fd9d2d61d'
-        }
+        callerSpanContext: new SpanContext(
+            '1848fadd-fa16-4b3e-8ad1-6d73339bbee7',
+            '7a7cc5bf-796e-4527-9b42-13ae5766c6fd',
+            'e96de653-ad6e-4ad5-b437-e81fd9d2d61d')
     })
     .setTag(opentracing.Tags.SPAN_KIND, 'server')
     .setTag(opentracing.Tags.HTTP_METHOD, 'GET');
