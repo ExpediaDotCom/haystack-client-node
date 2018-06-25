@@ -32,9 +32,12 @@ export default class FileDispatcher implements Dispatcher {
         return 'FileDispatcher';
     }
 
-    dispatch(span: Span): void {
+    dispatch(span: Span, callback: (error) => void): void {
         this._spanFileStream.write(span.toString());
         this._spanFileStream.write('\n');
+        if (callback) {
+            callback(null);
+        }
     }
 
     close(callback: () => void): void {

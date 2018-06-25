@@ -28,8 +28,11 @@ export default class InMemoryDispatcher implements Dispatcher {
         return 'InMemoryDispatcher';
     }
 
-    dispatch(span: Span): void {
+    dispatch(span: Span, callback: (error) => void): void {
         this._spans.push(span);
+        if (callback) {
+            callback(null);
+        }
     }
 
     close(callback: () => void): void {

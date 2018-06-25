@@ -18,6 +18,6 @@ import Span from '../span';
 
 export interface Dispatcher {
     name(): string;
-    dispatch(span: Span): void;
+    dispatch(span: Span, callback: (error) => void): void;
     close(callback: () => void): void;
 }

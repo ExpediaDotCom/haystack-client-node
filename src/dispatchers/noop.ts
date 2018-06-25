@@ -24,7 +24,11 @@ export default class NoopDispatcher implements Dispatcher {
         return 'NoopDispatcher';
     }
 
-    dispatch(span: Span): void { }
+    dispatch(span: Span, callback: (error) => void): void {
+        if (callback) {
+            callback(null);
+        }
+    }
 
     close(callback: () => void): void {
         if (callback) {
