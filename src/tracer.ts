@@ -112,10 +112,13 @@ export default class Tracer {
         return this._dispatcher;
     }
 
-    close(): void {
+    close(callback: () => void): void {
         this._dispatcher.close(() => {
             if (this._logger) {
                 this._logger.info('Tracer has been closed now.');
+            }
+            if (callback) {
+                callback();
             }
         });
     }
