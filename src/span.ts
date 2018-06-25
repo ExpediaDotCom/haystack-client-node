@@ -127,14 +127,14 @@ export default class Span {
         });
     }
 
-    finish(finishTime?: number): void {
+    finish(finishTime?: number, callback?: (error) => void): void {
         if (this._isFinished) {
             const spanInfo = `operation=${this.operationName},context=${this.context().toString()}`;
             throw new Error(`cant finish the same span twice - ${spanInfo}`);
         }
         const endTime = finishTime || Utils.now();
         this._duration = endTime - this._startTime;
-        this._tracer.dispatcher().dispatch(this);
+        this._tracer.dispatcher().dispatch(this, callback);
         this._isFinished = true;
     }
 

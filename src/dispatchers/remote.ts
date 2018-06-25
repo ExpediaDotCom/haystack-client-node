@@ -36,14 +36,20 @@ export default class RemoteDispatcher implements Dispatcher {
         return 'RemoteDispatcher';
     }
 
-    dispatch(span: Span): void {
+    dispatch(span: Span, callback: (error) => void): void {
         const proto = this._convertToProtoSpan(span);
         this._client.dispatch(proto, (err, response) => {
             if (this._logger) {
                 if (err) {
                     this._logger.error(`Fail to dispatch span to haystack-agent ${err.toString()}`);
+                    if (callback) {
+                        callback(new Error(err));
+                    }
                 } else {
                     this._logger.debug(`grpc response code from haystack-agent - ${response.getCode()}`);
+                    if (callback) {
+                        callback(null);
+                    }
                 }
             }
         });
