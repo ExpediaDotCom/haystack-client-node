@@ -94,7 +94,7 @@ export default class Tracer {
     private _createSpanContext(parent: SpanContext, callerContext: SpanContext): SpanContext {
         if (!parent || !parent.isValid) {
             if (callerContext) {
-                return new SpanContext(callerContext._traceId, callerContext._spanId, callerContext._parentSpanId, callerContext._baggage);
+                return new SpanContext(callerContext.traceId(), callerContext.spanId(), callerContext.parentSpanId(), callerContext.baggage());
             } else {
                 const parentBaggage = parent && parent.baggage();
                 return new SpanContext(Utils.randomUUID(), Utils.randomUUID(), parentBaggage);
