@@ -14,34 +14,14 @@
  *       limitations under the License.
  */
 
-import Span from '../span';
-import {Dispatcher} from './dispatcher';
+// startSpanFields is used for type-checking the Trace.startSpan().
+import SpanContext from './span_context';
+import * as opentracing from 'opentracing';
 
-export default class InMemoryDispatcher implements Dispatcher {
-    _spans: Span[];
-
-    constructor() {
-        this._spans = [];
-    }
-
-    name(): string {
-        return 'InMemoryDispatcher';
-    }
-
-    dispatch(span: Span, callback: (error) => void): void {
-        this._spans.push(span);
-        if (callback) {
-            callback(null);
-        }
-    }
-
-    close(callback: () => void): void {
-        if (callback) {
-            callback();
-        }
-    }
-
-    spans(): Span[] {
-        return this._spans;
-    }
+export default class StartSpanFields {
+    childOf?: SpanContext;
+    references?: opentracing.Reference[];
+    tags?: any;
+    startTime?: number;
+    callerSpanContext?: SpanContext;
 }

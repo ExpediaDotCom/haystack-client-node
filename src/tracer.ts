@@ -26,15 +26,7 @@ import Utils from './utils';
 import PropagationRegistry from './propagators/propagation_registry';
 import TextMapPropagator from './propagators/textmap_propagator';
 import URLCodex from './propagators/url_codex';
-
-// startSpanFields is used for type-checking the Trace.startSpan().
-declare interface StartSpanFields {
-    childOf?: SpanContext;
-    references?: opentracing.Reference[];
-    tags?: any;
-    startTime?: number;
-    callerSpanContext?: SpanContext;
-}
+import StartSpanFields from './start_span_fields';
 
 export default class Tracer {
     _serviceName: string;

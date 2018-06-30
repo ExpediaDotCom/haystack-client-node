@@ -12,7 +12,14 @@ check-node-version:
 	@$(MIN_NODE_VER_FOUND) || echo Build requires minimum Node $(MIN_NODE_VER).x
 
 .PHONY: build
-build: check-node-version npm_install idl_codegen tslint
+build: check-node-version npm_install idl_codegen tslint compile test
+
+.PHONY: test
+test:
+	./node_modules/mocha/bin/mocha -r ./node_modules/ts-node/register src/tests/**/*.ts
+
+.PHONY: compile
+compile:
 	rm -rf ./dist/
 	tsc -p tsconfig.json
 	cp package.json dist/
