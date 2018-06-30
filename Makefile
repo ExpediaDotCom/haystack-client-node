@@ -16,7 +16,7 @@ build: check-node-version npm_install idl_codegen tslint compile test
 
 .PHONY: test
 test:
-	./node_modules/mocha/bin/mocha -r ./node_modules/ts-node/register src/tests/**/*.ts
+	./node_modules/mocha/bin/mocha -r ./node_modules/ts-node/register tests/**/*.ts
 
 .PHONY: compile
 compile:

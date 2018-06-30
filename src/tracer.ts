@@ -127,7 +127,7 @@ export default class Tracer {
             return;
         }
 
-        const propagator = this._registry._propagators(format);
+        const propagator = this._registry.propagator(format);
         if (!propagator) {
             throw new Error('injector for the given format is not supported');
         }
@@ -140,7 +140,7 @@ export default class Tracer {
             return null;
         }
 
-        const propagator = this._registry._propagators(format);
+        const propagator = this._registry.propagator(format);
         if (!propagator) {
             throw new Error('extractor for the given format is not supported');
         }
