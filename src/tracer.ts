@@ -145,12 +145,12 @@ export default class Tracer {
 
     extract(format: string, carrier: any): SpanContext {
         if (!carrier) {
-            return;
+            return null;
         }
 
         const propagator = this._registry._propagators(format);
         if (!propagator) {
-            throw new Error('extracttor for the given format is not supported');
+            throw new Error('extractor for the given format is not supported');
         }
 
         return propagator.extract(carrier);
