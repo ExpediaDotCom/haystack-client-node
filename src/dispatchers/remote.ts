@@ -108,9 +108,12 @@ export default class RemoteDispatcher implements Dispatcher {
         } else if (typeof tagValue === 'boolean') {
             protoTag.setVbool(tagValue);
             protoTag.setType(messages.Tag.TagType.BOOL);
-        } else {
+        } else if (typeof tagValue === 'string') {
             protoTag.setVstr(tagValue);
             protoTag.setType(messages.Tag.TagType.STRING);
+        } else {
+            protoTag.setVbytes(tagValue);
+            protoTag.setType(messages.Tag.TagType.BINARY);
         }
 
         return protoTag;

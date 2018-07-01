@@ -35,7 +35,7 @@ export default class TextMapPropagator implements Propagator {
         const baggage = spanContext.baggage();
         for (const key in baggage) {
             if (baggage.hasOwnProperty(key)) {
-                carrier[`${this._opts.baggageKeyPrefix()}${key}`] = this._codex.encode(spanContext.baggage[key]);
+                carrier[`${this._opts.baggageKeyPrefix()}${key}`] = this._codex.encode(spanContext.baggage()[key]);
             }
         }
     }

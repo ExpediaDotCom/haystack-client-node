@@ -75,7 +75,7 @@ export default class Tracer {
             }
         }
 
-        const ctx = this._createSpanContext(parent, fields.callerSpanContext);
+        const ctx = Tracer._createSpanContext(parent, fields.callerSpanContext);
         return this._startSpan(operationName, ctx, startTime, references, spanTags);
     }
 
@@ -90,7 +90,7 @@ export default class Tracer {
         return span;
     }
 
-    private _createSpanContext(parent: SpanContext, callerContext: SpanContext): SpanContext {
+    static _createSpanContext(parent: SpanContext, callerContext: SpanContext): SpanContext {
         if (!parent || !parent.isValid) {
             if (callerContext) {
                 return new SpanContext(callerContext.traceId(), callerContext.spanId(), callerContext.parentSpanId(), callerContext.baggage());
