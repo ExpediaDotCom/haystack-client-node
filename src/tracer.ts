@@ -23,21 +23,17 @@ import SpanContext from './span_context';
 import NoopDispatcher from './dispatchers/noop';
 import NullLogger from './logger';
 import Utils from './utils';
-
-// startSpanFields is used for type-checking the Trace.startSpan().
-declare interface StartSpanFields {
-    childOf?: SpanContext;
-    references?: opentracing.Reference[];
-    tags?: any;
-    startTime?: number;
-    callerSpanContext?: SpanContext;
-}
+import PropagationRegistry from './propagators/propagation_registry';
+import TextMapPropagator from './propagators/textmap_propagator';
+import URLCodex from './propagators/url_codex';
+import StartSpanFields from './start_span_fields';
 
 export default class Tracer {
     _serviceName: string;
     _dispatcher: Dispatcher;
     _commonTags: any;
     _logger: any;
+    _registry: PropagationRegistry;
 
     constructor(serviceName: string,
                 dispatcher = new NoopDispatcher(),
@@ -47,6 +43,9 @@ export default class Tracer {
         this._serviceName = serviceName;
         this._dispatcher = dispatcher;
         this._logger = logger;
+        this._registry = new PropagationRegistry();
+        this._registry.register(opentracing.FORMAT_TEXT_MAP, new TextMapPropagator());
+        this._registry.register(opentracing.FORMAT_HTTP_HEADERS, new TextMapPropagator(new URLCodex()));
     }
 
     startSpan(operationName: string, fields?: StartSpanFields): Span {
@@ -76,7 +75,7 @@ export default class Tracer {
             }
         }
 
-        const ctx = this._createSpanContext(parent, fields.callerSpanContext);
+        const ctx = Tracer._createSpanContext(parent, fields.callerSpanContext);
         return this._startSpan(operationName, ctx, startTime, references, spanTags);
     }
 
@@ -91,7 +90,7 @@ export default class Tracer {
         return span;
     }
 
-    private _createSpanContext(parent: SpanContext, callerContext: SpanContext): SpanContext {
+    static _createSpanContext(parent: SpanContext, callerContext: SpanContext): SpanContext {
         if (!parent || !parent.isValid) {
             if (callerContext) {
                 return new SpanContext(callerContext.traceId(), callerContext.spanId(), callerContext.parentSpanId(), callerContext.baggage());
@@ -121,6 +120,32 @@ export default class Tracer {
                 callback();
             }
         });
+    }
+
+    inject(spanContext: SpanContext, format: string, carrier: any): void {
+        if (!spanContext) {
+            return;
+        }
+
+        const propagator = this._registry.propagator(format);
+        if (!propagator) {
+            throw new Error('injector for the given format is not supported');
+        }
+
+        propagator.inject(spanContext, carrier);
+    }
+
+    extract(format: string, carrier: any): SpanContext {
+        if (!carrier) {
+            return null;
+        }
+
+        const propagator = this._registry.propagator(format);
+        if (!propagator) {
+            throw new Error('extractor for the given format is not supported');
+        }
+
+        return propagator.extract(carrier);
     }
 
     static initTracer(config): Tracer {

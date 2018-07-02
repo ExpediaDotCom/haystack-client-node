@@ -14,34 +14,14 @@
  *       limitations under the License.
  */
 
-import Span from '../span';
-import {Dispatcher} from './dispatcher';
+import {Codex} from './propagator';
 
-export default class InMemoryDispatcher implements Dispatcher {
-    _spans: Span[];
-
-    constructor() {
-        this._spans = [];
+export default class URLCodex implements Codex {
+    encode(value: string): string {
+        return encodeURI(value);
     }
 
-    name(): string {
-        return 'InMemoryDispatcher';
-    }
-
-    dispatch(span: Span, callback: (error) => void): void {
-        this._spans.push(span);
-        if (callback) {
-            callback(null);
-        }
-    }
-
-    close(callback: () => void): void {
-        if (callback) {
-            callback();
-        }
-    }
-
-    spans(): Span[] {
-        return this._spans;
+    decode(value: string): string {
+        return decodeURI(value);
     }
 }
