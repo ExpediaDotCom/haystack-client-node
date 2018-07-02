@@ -26,6 +26,7 @@ deploy:
   email: $HAYSTACK_NPM_EMAIL
   api_key: $HAYSTACK_NPM_KEY
   tag: $TRAVIS_TAG
+  skip_cleanup: true
   on:
     branch: master
     tags: true
