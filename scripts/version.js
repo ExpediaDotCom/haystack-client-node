@@ -2,9 +2,12 @@ const pkginfo = require('npm-registry-package-info');
 const semver = require('semver');
 const fs = require('fs');
 
-var opts = {
+
+const moduleName = 'haystack-client';
+
+const opts = {
     'packages': [
-        'haystack-client'
+        moduleName
     ]
 };
 
@@ -12,7 +15,7 @@ pkginfo(opts, (error, data) => {
     if (error) {
         throw error;
     }
-    const currentVersion = data.data['haystack-client']['dist-tags']['latest'];
+    const currentVersion = data.data[moduleName]['dist-tags']['latest'];
     const releaseVersion = process.env.TRAVIS_TAG
     if (!releaseVersion) {
         throw new Error('No git tag commit is found, fail to release the "haystack-client" module');
