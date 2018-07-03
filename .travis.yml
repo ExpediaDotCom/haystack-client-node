@@ -19,6 +19,7 @@ script:
   - make build
 
 before_deploy:
+  - make prepare_publish
   - cd dist
 
 deploy:

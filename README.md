@@ -23,3 +23,8 @@ make build
 mkdir -p logs && node dist/examples/index.js
 ```
 
+## How to release this library?
+
+We publish using the git tag. The version.js under scripts/ folder verifies if new tag is greater than current published version on npm.
+If it is good, it updates the new version in package.json under dist/ and publish it on npm
+

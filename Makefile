@@ -14,6 +14,12 @@ check-node-version:
 .PHONY: build
 build: check-node-version npm_install idl_codegen tslint compile test
 
+.PHONY: prepare_publish
+prepare_publish:
+	node scripts/version.js
+	cp package.json dist/
+	cp README.md dist/
+
 .PHONY: test
 test:
 	./node_modules/mocha/bin/mocha -r ./node_modules/ts-node/register tests/**/*.ts
@@ -22,7 +28,6 @@ test:
 compile:
 	rm -rf ./dist/
 	tsc -p tsconfig.json
-	cp package.json dist/
 
 .PHONY: tslnt
 tslint:
