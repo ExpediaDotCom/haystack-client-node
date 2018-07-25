@@ -28,7 +28,7 @@ test:
 compile:
 	rm -rf ./dist/
 	tsc -p tsconfig.json
-
+	cp -a src/proto_idl_codegen dist/
 .PHONY: tslnt
 tslint:
 	$(shell ./node_modules/tslint/bin/tslint -t msbuild -c tslint.json 'src/**/*.ts')

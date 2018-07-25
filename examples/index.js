@@ -44,9 +44,7 @@ const config = {
 
         // or
 
-        // type: 'haystack_agent',
-        // agentHost: '192.168.99.100',
-        // agentPort: '35000'
+        // type: 'haystack_agent'
     },
     logger: logger
 };
@@ -57,11 +55,11 @@ const tracer = initTracer(config);
 /// now create a span, for e.g. at the time of incoming REST call.
 /// Make sure to add SPAN_KIND tag. Possible values are 'server' or 'client'.
 /// Important: if you are receiving TraceId, SpanId, ParentSpanId in the http headers or message payload of your incoming REST call,
-/// then set it in the callerSpanContext
+/// then create a SpanContext with those IDs and initialize the tracer with a childOf the received SpanContext
 
 const serverSpan = tracer
     .startSpan('dummy-operation', {
-        callerSpanContext: new SpanContext(
+        childOf: new SpanContext(
             '1848fadd-fa16-4b3e-8ad1-6d73339bbee7',
             '7a7cc5bf-796e-4527-9b42-13ae5766c6fd',
             'e96de653-ad6e-4ad5-b437-e81fd9d2d61d')
@@ -69,7 +67,7 @@ const serverSpan = tracer
     .setTag(opentracing.Tags.SPAN_KIND, 'server')
     .setTag(opentracing.Tags.HTTP_METHOD, 'GET');
 
-/// Or if you are the root service, skip callerSpanContext and use the following
+/// Or if you are the root service
 
 // const serverSpan = tracer
 //     .startSpan('dummy-operation')
@@ -82,7 +80,6 @@ const serverSpan = tracer
 /// now say service is calling downstream service, then you start another span - a client span
 /// since this span is a child of the main serverSpan, so pass it along as `childOf` attribute.
 /// library will setup the traceId, spanId and parentSpanId by itself.
-/// You dont need to set the callerSpanContext if you are setting childOf
 const clientChildSpan = tracer.startSpan('downstream-service-call', {
     childOf: serverSpan,
     tags: {
