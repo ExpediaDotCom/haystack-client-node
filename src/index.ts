@@ -26,6 +26,18 @@ import Configuration from './configuration';
 
 import * as opentracing from 'opentracing';
 
+export {
+    Configuration,
+    Tracer,
+    SpanContext,
+    Span,
+    NoopDispatcher,
+    InMemoryDispatcher,
+    FileDispatcher,
+    AgentDispatcher,
+    opentracing
+};
+
 module.exports = {
     Configuration,
     initTracer: Tracer.initTracer,
