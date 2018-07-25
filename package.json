@@ -1,6 +1,6 @@
 {
   "name": "haystack-client",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Haystack OpenTracing compliant client",
   "engines": {
     "node": ">=0.10"
