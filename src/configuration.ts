@@ -33,7 +33,7 @@ export default class Configuration {
                 case 'in_memory':
                     return new InMemoryDispatcher();
                 default:
-                    throw new Error(`dispatcher of type ${dispatcher} is not unknown`);
+                    throw new Error(`dispatcher of type ${dispatcher.type} is unknown in dispatcher config: ${JSON.stringify(dispatcher)}`);
             }
         }
         return new NoopDispatcher();
