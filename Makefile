@@ -27,7 +27,7 @@ test:
 .PHONY: compile
 compile:
 	rm -rf ./dist/
-	tsc -p tsconfig.json
+	./node_modules/typescript/bin/tsc -p tsconfig.json
 	cp -a src/proto_idl_codegen dist/
 .PHONY: tslnt
 tslint:
