@@ -27,9 +27,9 @@ export default class RemoteDispatcher implements Dispatcher {
     _logger: any;
 
     constructor(agentHost: string, agentPort: number, logger = new NullLogger()) {
-        logger.info(`Initializing the remote dispatcher, connecting at ${agentHost}:${agentPort}`);
         agentHost = agentHost || 'haystack-agent';
         agentPort = agentPort || 35000;
+        logger.info(`Initializing the remote dispatcher, connecting at ${agentHost}:${agentPort}`);
         this._client = new services.SpanAgentClient(`${agentHost}:${agentPort}`, grpc.credentials.createInsecure());
         this._logger = logger;
     }
@@ -63,9 +63,9 @@ export default class RemoteDispatcher implements Dispatcher {
         const protoSpan = new messages.Span();
         protoSpan.setServicename(span.serviceName());
         protoSpan.setOperationname(span.operationName());
-        protoSpan.setTraceid(span.context().traceId());
-        protoSpan.setSpanid(span.context().spanId());
-        protoSpan.setParentspanid(span.context().parentSpanId());
+        protoSpan.setTraceid(span.context().traceId);
+        protoSpan.setSpanid(span.context().spanId);
+        protoSpan.setParentspanid(span.context().parentSpanId);
         protoSpan.setStarttime(span.startTime());
         protoSpan.setDuration(span.duration());
 

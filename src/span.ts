@@ -169,7 +169,7 @@ export default class Span extends opentracing.Span {
     }
 
     protected _getBaggageItem(key: string): string | any {
-        return this._spanContext.baggage()[key];
+        return this._spanContext.baggage[key];
     }
 
     protected _context(): SpanContext {

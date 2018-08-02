@@ -37,8 +37,8 @@ const expectSpansInStore = (inMemSpanStore: InMemoryDispatcher, expectedCount: n
         const versionTagValue = receivedSpan.tags()['version'];
         expect(versionTagValue).eq('1.1');
         expect(receivedSpan.serviceName()).eq(dummyServiceName);
-        expect(isUndefined(receivedSpan.context().traceId())).eq(false);
-        expect(isUndefined(receivedSpan.context().spanId())).eq(false);
+        expect(isUndefined(receivedSpan.context().traceId)).eq(false);
+        expect(isUndefined(receivedSpan.context().spanId)).eq(false);
     });
 };
 
@@ -62,7 +62,7 @@ describe('Tracer tests', () => {
             expectSpansInStore(inMemSpanStore, 1);
             const receivedSpan = inMemSpanStore.spans()[0];
             expect(receivedSpan.operationName()).eq(dummyOperation);
-            expect(isUndefined(receivedSpan.context().parentSpanId())).eq(true);
+            expect(isUndefined(receivedSpan.context().parentSpanId)).eq(true);
         });
 
         it('should start and dispatch server and client spans', () => {
@@ -77,6 +77,9 @@ describe('Tracer tests', () => {
             startClientSpanFields.childOf = serverSpan.context();
             startClientSpanFields.tags = { 'span.kind': 'client' };
             const clientSpan = tracer.startSpan(downstreamOperation, startClientSpanFields);
+            clientSpan.log({
+                eventCode: 100
+            });
 
             expect(serverSpan.isFinished()).eq(false);
             expect(inMemSpanStore.spans().length).equal(0);
@@ -85,16 +88,21 @@ describe('Tracer tests', () => {
 
             expectSpansInStore(inMemSpanStore, 2);
 
-            expect(inMemSpanStore.spans().map(span => span.operationName())).includes(downstreamOperation);
-            expect(inMemSpanStore.spans().map(span => span.operationName())).includes(dummyOperation);
-
             const receivedClientSpan = findSpan(inMemSpanStore, 'client');
             const receivedServerSpan = findSpan(inMemSpanStore, 'server');
 
+            expect(receivedClientSpan.operationName()).eq(downstreamOperation);
+            expect(receivedServerSpan.operationName()).eq(dummyOperation);
             expect(receivedClientSpan.duration() <= receivedServerSpan.duration()).eq(true);
-            expect(receivedClientSpan.context().parentSpanId()).eq(receivedServerSpan.context().spanId());
-            expect(isUndefined(receivedServerSpan.context().parentSpanId())).eq(true);
-            expect(receivedServerSpan.context().traceId()).eq(receivedClientSpan.context().traceId());
+            expect(receivedClientSpan.context().parentSpanId).eq(receivedServerSpan.context().spanId);
+            expect(isUndefined(receivedServerSpan.context().parentSpanId)).eq(true);
+            expect(receivedServerSpan.context().traceId).eq(receivedClientSpan.context().traceId);
+
+            expect(receivedClientSpan.logs().length).eq(1);
+            receivedClientSpan.logs().forEach(log => {
+              expect(log.keyValuePairs['eventCode']).eq(100);
+              expect(log.timestamp <= (Date.now() * 1000)).eq(true);
+            })
         });
 
         it('should inject the span in the carrier', () => {
@@ -111,7 +119,7 @@ describe('Tracer tests', () => {
             const tracer = new Tracer(dummyServiceName, inMemSpanStore, commonTags);
             const carrier = {'Trace-ID': 'a' , 'Span-ID': 'b', 'Parent-ID': 'c', 'Baggage-myKey': 'myVal'};
             const spanContext = tracer.extract(opentracing.FORMAT_TEXT_MAP, carrier);
-            expect(JSON.stringify(spanContext)).eq('{"_traceId":"a","_spanId":"b","_parentSpanId":"c","_baggage":{"myKey":"myVal"}}');
+            expect(JSON.stringify(spanContext)).eq('{"traceId":"a","spanId":"b","parentSpanId":"c","baggage":{"myKey":"myVal"}}');
         });
     });
 });

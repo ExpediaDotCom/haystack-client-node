@@ -27,6 +27,7 @@ import PropagationRegistry from './propagators/propagation_registry';
 import TextMapPropagator from './propagators/textmap_propagator';
 import URLCodex from './propagators/url_codex';
 import StartSpanFields from './start_span_fields';
+import BinaryPropagator from './propagators/binary_propagator';
 
 export default class Tracer extends opentracing.Tracer {
     _serviceName: string;
@@ -46,6 +47,7 @@ export default class Tracer extends opentracing.Tracer {
         this._logger = logger;
         this._registry = new PropagationRegistry();
         this._registry.register(opentracing.FORMAT_TEXT_MAP, new TextMapPropagator());
+        this._registry.register(opentracing.FORMAT_BINARY, new BinaryPropagator());
         this._registry.register(opentracing.FORMAT_HTTP_HEADERS, new TextMapPropagator(new URLCodex()));
     }
 
@@ -98,13 +100,13 @@ export default class Tracer extends opentracing.Tracer {
     static _createSpanContext(parent: SpanContext, callerContext: SpanContext): SpanContext {
         if (!parent || !parent.isValid) {
             if (callerContext) {
-                return new SpanContext(callerContext.traceId(), callerContext.spanId(), callerContext.parentSpanId(), callerContext.baggage());
+                return new SpanContext(callerContext.traceId, callerContext.spanId, callerContext.parentSpanId, callerContext.baggage);
             } else {
-                const parentBaggage = parent && parent.baggage();
+                const parentBaggage = parent && parent.baggage;
                 return new SpanContext(Utils.randomUUID(), Utils.randomUUID(), parentBaggage);
             }
         } else {
-            return new SpanContext(parent.traceId(), Utils.randomUUID(), parent.spanId(), parent.baggage());
+            return new SpanContext(parent.traceId, Utils.randomUUID(), parent.spanId, parent.baggage);
         }
     }
 
@@ -142,7 +144,7 @@ export default class Tracer extends opentracing.Tracer {
 
         const propagator = this._registry.propagator(format);
         if (!propagator) {
-            throw new Error('injector for the given format is not supported');
+            throw new Error('injector is not supported for format=' + format);
         }
 
         propagator.inject(spanContext, carrier);
@@ -155,7 +157,7 @@ export default class Tracer extends opentracing.Tracer {
 
         const propagator = this._registry.propagator(format);
         if (!propagator) {
-            throw new Error('extractor for the given format is not supported');
+            throw new Error('extractor is not supported for format=' + format);
         }
 
         return propagator.extract(carrier);
