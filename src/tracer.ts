@@ -28,10 +28,10 @@ import TextMapPropagator from './propagators/textmap_propagator';
 import URLCodex from './propagators/url_codex';
 import StartSpanFields from './start_span_fields';
 
-export default class Tracer {
+export default class Tracer extends opentracing.Tracer {
     _serviceName: string;
     _dispatcher: Dispatcher;
-    _commonTags: any;
+    _commonTags: { [key: string]: any };
     _logger: any;
     _registry: PropagationRegistry;
 
@@ -39,6 +39,7 @@ export default class Tracer {
                 dispatcher = new NoopDispatcher(),
                 commonTags: any = {},
                 logger = new NullLogger()) {
+        super();
         this._commonTags = commonTags || {};
         this._serviceName = serviceName;
         this._dispatcher = dispatcher;
@@ -49,6 +50,10 @@ export default class Tracer {
     }
 
     startSpan(operationName: string, fields?: StartSpanFields): Span {
+       return this._startSpan(operationName, fields);
+    }
+
+    protected _startSpan(operationName: string, fields: StartSpanFields): Span {
         fields = fields || {};
         const references = fields.references || [];
         const spanTags = fields.tags || {};
@@ -63,12 +68,12 @@ export default class Tracer {
                 const ref = references[i];
                 if (ref.type() === opentracing.REFERENCE_CHILD_OF) {
                     if (!parent || followsFromIsParent) {
-                        parent = ref.referencedContext();
+                        parent = ref.referencedContext() as SpanContext;
                         break;
                     }
                 } else if (ref.type() === opentracing.REFERENCE_FOLLOWS_FROM) {
                     if (!parent) {
-                        parent = ref.referencedContext();
+                        parent = ref.referencedContext() as SpanContext;
                         followsFromIsParent = true;
                     }
                 }
@@ -76,14 +81,14 @@ export default class Tracer {
         }
 
         const ctx = Tracer._createSpanContext(parent, fields.callerSpanContext);
-        return this._startSpan(operationName, ctx, startTime, references, spanTags);
+        return this._spanStart(operationName, ctx, startTime, references, spanTags);
     }
 
-    private _startSpan(operationName: string,
+    private _spanStart(operationName: string,
                        ctx: SpanContext,
                        startTime: number,
                        references: opentracing.Reference[],
-                       spanTags: any): Span {
+                       spanTags: { [key: string]: any }): Span {
         const span = new Span(this, operationName, ctx, startTime, references);
         span.addTags(this._commonTags)
             .addTags(spanTags);
@@ -123,6 +128,14 @@ export default class Tracer {
     }
 
     inject(spanContext: SpanContext, format: string, carrier: any): void {
+        return this._inject(spanContext, format, carrier);
+    }
+
+    extract(format: string, carrier: any): SpanContext {
+       return this._extract(format, carrier);
+    }
+
+    protected _inject(spanContext: SpanContext, format: string, carrier: any): void {
         if (!spanContext) {
             return;
         }
@@ -135,7 +148,7 @@ export default class Tracer {
         propagator.inject(spanContext, carrier);
     }
 
-    extract(format: string, carrier: any): SpanContext {
+    protected _extract(format: string, carrier: any): SpanContext | any {
         if (!carrier) {
             return null;
         }
@@ -148,7 +161,7 @@ export default class Tracer {
         return propagator.extract(carrier);
     }
 
-    static initTracer(config): Tracer {
+    static initTracer(config): opentracing.Tracer {
         if (config.disable) {
             return new opentracing.Tracer();
         }

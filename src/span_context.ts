@@ -15,8 +15,9 @@
  */
 
 import Utils from './utils';
+import * as opentracing from 'opentracing';
 
-export default class SpanContext {
+export default class SpanContext extends opentracing.SpanContext {
     _traceId: string;
     _spanId: string;
     _parentSpanId: string;
@@ -27,6 +28,7 @@ export default class SpanContext {
         spanId,
         parentSpanId,
         baggage = {}) {
+        super();
         this._traceId = traceId;
         this._spanId = spanId;
         this._parentSpanId = parentSpanId;

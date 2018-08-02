@@ -14,14 +14,12 @@
  *       limitations under the License.
  */
 
-// startSpanFields is used for type-checking the Trace.startSpan().
-import SpanContext from './span_context';
-import * as opentracing from 'opentracing';
+export default class LogData {
+    keyValuePairs: { [key: string]: any };
+    timestamp: number;
 
-export default class StartSpanFields implements opentracing.SpanOptions {
-    childOf?: SpanContext;
-    references?: opentracing.Reference[];
-    tags?: any;
-    startTime?: number;
-    callerSpanContext?: SpanContext;
+    constructor(keyValuePairs: { [key: string]: any }, timestamp: number) {
+        this.keyValuePairs = keyValuePairs;
+        this.timestamp = timestamp;
+    }
 }

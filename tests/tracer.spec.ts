@@ -34,9 +34,8 @@ const expectSpansInStore = (inMemSpanStore: InMemoryDispatcher, expectedCount: n
     expect(inMemSpanStore.spans().length).eq(expectedCount);
     inMemSpanStore.spans().forEach(receivedSpan => {
         expect(receivedSpan.isFinished()).eq(true);
-        const receivedSpanTag = receivedSpan.tags()[0];
-        expect(receivedSpanTag.key).eq('version');
-        expect(receivedSpanTag.value).eq('1.1');
+        const versionTagValue = receivedSpan.tags()['version'];
+        expect(versionTagValue).eq('1.1');
         expect(receivedSpan.serviceName()).eq(dummyServiceName);
         expect(isUndefined(receivedSpan.context().traceId())).eq(false);
         expect(isUndefined(receivedSpan.context().spanId())).eq(false);
@@ -46,7 +45,7 @@ const expectSpansInStore = (inMemSpanStore: InMemoryDispatcher, expectedCount: n
 const findSpan = (inMemSpanStore: InMemoryDispatcher, spanKind: string): Span => {
     return inMemSpanStore
         .spans()
-        .filter(span => span.tags().filter(tag => tag.key === 'span.kind' && tag.value === spanKind).length > 0)[0];
+        .filter(span => span.tags()['span.kind'] === spanKind)[0];
 };
 
 describe('Tracer tests', () => {
