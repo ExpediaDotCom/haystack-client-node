@@ -28,14 +28,14 @@ export default class TextMapPropagator implements Propagator {
     }
 
     inject(spanContext: SpanContext, carrier: any): void {
-        carrier[this._opts.traceIdKey()] = spanContext.traceId();
-        carrier[this._opts.spanIdKey()] = spanContext.spanId();
-        carrier[this._opts.parentSpanIdKey()] = spanContext.parentSpanId();
+        carrier[this._opts.traceIdKey()] = spanContext.traceId;
+        carrier[this._opts.spanIdKey()] = spanContext.spanId;
+        carrier[this._opts.parentSpanIdKey()] = spanContext.parentSpanId;
 
-        const baggage = spanContext.baggage();
+        const baggage = spanContext.baggage;
         for (const key in baggage) {
             if (baggage.hasOwnProperty(key)) {
-                carrier[`${this._opts.baggageKeyPrefix()}${key}`] = this._codex.encode(spanContext.baggage()[key]);
+                carrier[`${this._opts.baggageKeyPrefix()}${key}`] = this._codex.encode(spanContext.baggage[key]);
             }
         }
     }

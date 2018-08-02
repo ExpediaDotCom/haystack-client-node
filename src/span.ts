@@ -19,16 +19,17 @@ import Tracer from './tracer';
 import Utils from './utils';
 
 import * as opentracing from 'opentracing';
+import LogData from './log_data';
 
-export default class Span {
-    _tracer: Tracer;
+export default class Span extends opentracing.Span {
+    _tracerImpl: Tracer;
     _operationName: string;
     _spanContext: SpanContext;
     _startTime: number;
     _duration: number;
     _references: opentracing.Reference[];
-    _logs: opentracing.LogData[];
-    _tags: opentracing.Tag[];
+    _logs: LogData[];
+    _tags: { [key: string]: any };
     _isFinished: boolean;
 
     constructor(tracer: Tracer,
@@ -36,13 +37,14 @@ export default class Span {
                 spanContext: SpanContext,
                 startTime: number,
                 references: opentracing.Reference[]) {
-        this._tracer = tracer;
+        super();
+        this._tracerImpl = tracer;
         this._operationName = operationName;
         this._spanContext = spanContext;
         this._startTime = startTime;
         this._references = references;
         this._logs = [];
-        this._tags = [];
+        this._tags = {};
         this._isFinished = false;
     }
 
@@ -51,18 +53,18 @@ export default class Span {
     }
 
     serviceName(): string {
-        return this._tracer._serviceName;
+        return this._tracerImpl._serviceName;
     }
 
     context(): SpanContext {
         return this._spanContext;
     }
 
-    tags(): opentracing.Tag[] {
+    tags(): { [key: string]: any } {
         return this._tags;
     }
 
-    logs(): opentracing.LogData[] {
+    logs(): LogData[] {
         return this._logs;
     }
 
@@ -74,68 +76,68 @@ export default class Span {
         return this._duration;
     }
 
-    tracer(): Tracer {
-        return this._tracer;
+    tracer(): opentracing.Tracer {
+        return this._tracer();
     }
 
-    setOperationName(name): Span {
-        this._operationName = name;
+    setOperationName(name): this {
+        this._setOperationName(name);
         return this;
     }
 
     isFinished(): boolean {
         return this._isFinished;
     }
-    addTags(keyValues: any): Span {
-        for (const k in keyValues) {
-            if (keyValues.hasOwnProperty(k)) {
-                this.setTag(k, keyValues[k]);
-            }
-        }
+
+    addTags(keyValueMap: { [key: string]: any; }): this {
+        this._addTags(keyValueMap);
         return this;
     }
 
-    setTag(k: string, v: any): Span {
-        this._tags.push({ key: k, value: v });
+    setTag(k: string, v: any): this {
+        this._tags[k] = v;
         return this;
     }
 
-    setBaggageItem(key: string, value: string): Span {
+    setBaggageItem(key: string, value: string): this {
         const prevBaggageValue = this._spanContext.baggage[key];
         this._logFields(key, value, prevBaggageValue);
-        this._spanContext.addBaggageItem(key, value);
+        this._spanContext = this._spanContext.addBaggageItem(key, value);
         return this;
     }
 
-    log(keyValuePairs: any, timestamp?: number): void {
-        const _tags = [];
-        for (const k in keyValuePairs) {
-            if (keyValuePairs.hasOwnProperty(k)) {
-                _tags.push({key: k, value: keyValuePairs[k]});
-            }
-        }
-        this._logs.push({
-            timestamp: timestamp || Utils.now(),
-            tags: _tags
-        });
+    log(keyValuePairs: { [p: string]: any }, timestamp?: number): this {
+        this._log(keyValuePairs, timestamp);
+        return this;
     }
 
-    logEvent(eventName: string, payLoad: any): void {
-        return this.log({
+    logEvent(eventName: string, data: any): void {
+        this.log({
             event: eventName,
-            payload: payLoad
+            payload: data
         });
     }
 
     finish(finishTime?: number, callback?: (error) => void): void {
-        if (this._isFinished) {
-            const spanInfo = `operation=${this.operationName},context=${this.context().toString()}`;
-            throw new Error(`cant finish the same span twice - ${spanInfo}`);
+        this._finish(finishTime, callback);
+    }
+
+    getBaggageItem(key: string): string | any {
+        return this._getBaggageItem(key);
+    }
+
+    protected _tracer(): opentracing.Tracer {
+        return this._tracerImpl;
+    }
+
+    protected _log(keyValuePairs: { [p: string]: any }, timestamp?: number): void {
+        const kvPairs = {};
+        for (const k in keyValuePairs) {
+            if (keyValuePairs.hasOwnProperty(k)) {
+                kvPairs[k] = keyValuePairs[k];
+            }
         }
-        const endTime = finishTime || Utils.now();
-        this._duration = endTime - this._startTime;
-        this._tracer.dispatcher().dispatch(this, callback);
-        this._isFinished = true;
+        this._logs.push(new LogData(kvPairs, timestamp || Utils.now()));
     }
 
     private _logFields(k: string, v: string, prevBaggageValue: string): void {
@@ -148,6 +150,41 @@ export default class Span {
             fields.override = 'true';
         }
         this.log(fields);
+    }
+
+    protected _addTags(keyValuePairs: { [p: string]: any }): void {
+        for (const k in keyValuePairs) {
+            if (keyValuePairs.hasOwnProperty(k)) {
+                this.setTag(k, keyValuePairs[k]);
+            }
+        }
+    }
+
+    protected _setOperationName(name: string): void {
+        this._operationName = name;
+    }
+
+    protected _setBaggageItem(key: string, value: string): void {
+        this._spanContext = this._spanContext.addBaggageItem(key, value);
+    }
+
+    protected _getBaggageItem(key: string): string | any {
+        return this._spanContext.baggage[key];
+    }
+
+    protected _context(): SpanContext {
+        return this._spanContext;
+    }
+
+    protected _finish(finishTime?: number, callback?: (error) => void): void {
+        if (this._isFinished) {
+            const spanInfo = `operation=${this.operationName},context=${this.context().toString()}`;
+            throw new Error(`cant finish the same span twice - ${spanInfo}`);
+        }
+        const endTime = finishTime || Utils.now();
+        this._duration = endTime - this._startTime;
+        this._tracerImpl.dispatcher().dispatch(this, callback);
+        this._isFinished = true;
     }
 
     toString(): string {

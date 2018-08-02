@@ -27,9 +27,9 @@ export default class RemoteDispatcher implements Dispatcher {
     _logger: any;
 
     constructor(agentHost: string, agentPort: number, logger = new NullLogger()) {
-        logger.info(`Initializing the remote dispatcher, connecting at ${agentHost}:${agentPort}`);
         agentHost = agentHost || 'haystack-agent';
         agentPort = agentPort || 35000;
+        logger.info(`Initializing the remote dispatcher, connecting at ${agentHost}:${agentPort}`);
         this._client = new services.SpanAgentClient(`${agentHost}:${agentPort}`, grpc.credentials.createInsecure());
         this._logger = logger;
     }
@@ -63,16 +63,20 @@ export default class RemoteDispatcher implements Dispatcher {
         const protoSpan = new messages.Span();
         protoSpan.setServicename(span.serviceName());
         protoSpan.setOperationname(span.operationName());
-        protoSpan.setTraceid(span.context().traceId());
-        protoSpan.setSpanid(span.context().spanId());
-        protoSpan.setParentspanid(span.context().parentSpanId());
+        protoSpan.setTraceid(span.context().traceId);
+        protoSpan.setSpanid(span.context().spanId);
+        protoSpan.setParentspanid(span.context().parentSpanId);
         protoSpan.setStarttime(span.startTime());
         protoSpan.setDuration(span.duration());
 
         const protoSpanTags = [];
-        span.tags().forEach(tag => {
-            protoSpanTags.push(this._createProtoTag(tag));
-        });
+
+        const tags = span.tags();
+        for (const k in tags) {
+            if (tags.hasOwnProperty(k)) {
+                protoSpanTags.push(RemoteDispatcher._createProtoTag(k, tags[k]));
+            }
+        }
 
         protoSpan.setTagsList(protoSpanTags);
 
@@ -80,9 +84,12 @@ export default class RemoteDispatcher implements Dispatcher {
         span.logs().forEach(log => {
             const protoLog = new messages.Log();
             const protoLogTags = [];
-            log.tags.forEach(tag => {
-                protoLogTags.push(this._createProtoTag(tag));
-            });
+            const kvPairs = log.keyValuePairs;
+            for (const k in kvPairs) {
+                if (kvPairs.hasOwnProperty(k)) {
+                    protoLogTags.push(RemoteDispatcher._createProtoTag(k, kvPairs[k]));
+                }
+            }
             protoLog.setTimestamp(log.timestamp);
             protoLog.setFieldsList(protoLogTags);
             protoSpanLogs.push(protoLog);
@@ -92,11 +99,11 @@ export default class RemoteDispatcher implements Dispatcher {
         return protoSpan;
     }
 
-    private _createProtoTag(tag: any): any {
+    private static _createProtoTag(key: string, value: any): any {
         const protoTag = new messages.Tag();
-        protoTag.setKey(tag.key);
+        protoTag.setKey(key);
 
-        const tagValue = tag.value;
+        const tagValue = value;
         if (typeof tagValue === 'number') {
             if (Utils.isFloatType(tagValue)) {
                 protoTag.setVdouble(tagValue);

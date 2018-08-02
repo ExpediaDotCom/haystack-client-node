@@ -14,14 +14,14 @@
  *       limitations under the License.
  */
 
-// startSpanFields is used for type-checking the Trace.startSpan().
-import SpanContext from './span_context';
-import * as opentracing from 'opentracing';
+import {Propagator} from './propagator';
+import SpanContext from '../span_context';
 
-export default class StartSpanFields implements opentracing.SpanOptions {
-    childOf?: SpanContext;
-    references?: opentracing.Reference[];
-    tags?: any;
-    startTime?: number;
-    callerSpanContext?: SpanContext;
+export default class BinaryPropagator implements Propagator {
+    inject(spanContext: SpanContext, carrier: any): void {
+    }
+
+    extract(carrier: any): SpanContext {
+        return null;
+    }
 }

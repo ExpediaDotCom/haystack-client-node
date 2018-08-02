@@ -14,14 +14,15 @@
  *       limitations under the License.
  */
 
-// startSpanFields is used for type-checking the Trace.startSpan().
-import SpanContext from './span_context';
-import * as opentracing from 'opentracing';
+import Tracer from '../src/tracer';
 
-export default class StartSpanFields implements opentracing.SpanOptions {
-    childOf?: SpanContext;
-    references?: opentracing.Reference[];
-    tags?: any;
-    startTime?: number;
-    callerSpanContext?: SpanContext;
-}
+describe('OpenTracing Api Compatibility Tests', () => {
+
+    describe('OpenTracing Api', () => {
+        it("should be compatible", () => {
+            const apiCompatibilityChecks = require('opentracing/lib/test/api_compatibility.js').default;
+            apiCompatibilityChecks(() => new Tracer('my-service'));
+        });
+    });
+});
+

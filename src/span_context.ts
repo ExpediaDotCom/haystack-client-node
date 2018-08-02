@@ -15,62 +15,48 @@
  */
 
 import Utils from './utils';
+import * as opentracing from 'opentracing';
 
-export default class SpanContext {
-    _traceId: string;
-    _spanId: string;
-    _parentSpanId: string;
-    _baggage: any;
+export default class SpanContext extends opentracing.SpanContext {
+    traceId: string;
+    spanId: string;
+    parentSpanId: string;
+    baggage: any;
 
     constructor(
         traceId,
         spanId,
         parentSpanId,
         baggage = {}) {
-        this._traceId = traceId;
-        this._spanId = spanId;
-        this._parentSpanId = parentSpanId;
-        this._baggage = baggage;
-    }
-
-    traceId(): string {
-        return this._traceId;
-    }
-
-    spanId(): string {
-        return this._spanId;
-    }
-
-    parentSpanId(): string {
-        return this._parentSpanId;
-    }
-
-    baggage(): any {
-        return this._baggage;
+        super();
+        this.traceId = traceId;
+        this.spanId = spanId;
+        this.parentSpanId = parentSpanId;
+        this.baggage = baggage;
     }
 
     setTraceId(traceId: string): void {
-        this._traceId = traceId;
+        this.traceId = traceId;
     }
 
     setSpanId(spanId: string): void {
-        this._spanId = spanId;
+        this.spanId = spanId;
     }
 
     setParentSpanId(parentSpanId: string): void {
-        this._parentSpanId = parentSpanId;
+        this.parentSpanId = parentSpanId;
     }
 
     addBaggageItem(key: string, value: any): SpanContext {
-        const newBaggage = Utils.assign(this._baggage, key, value);
+        const newBaggage = Utils.assign(this.baggage, key, value);
         return new SpanContext(
-            this._traceId,
-            this._spanId,
-            this._parentSpanId,
+            this.traceId,
+            this.spanId,
+            this.parentSpanId,
             newBaggage);
     }
 
     isValid(): boolean {
-        return !!(this._traceId && this._spanId);
+        return !!(this.traceId && this.spanId);
     }
 }

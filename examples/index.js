@@ -91,6 +91,10 @@ const clientChildSpan = tracer.startSpan('downstream-service-call', {
 /// add more tags or logs to your spans
 clientChildSpan.setTag(opentracing.Tags.ERROR, true);
 clientChildSpan.setTag(opentracing.Tags.HTTP_STATUS_CODE, 503);
+clientChildSpan.addTags({'child-custom-tag-1': 1, 'child-custom-tag-2': 'someval'});
+clientChildSpan.log({
+  eventCode: 1001
+});
 
 serverSpan.setTag(opentracing.Tags.ERROR, true);
 serverSpan.setTag('my-custom-tag', 10.5);
