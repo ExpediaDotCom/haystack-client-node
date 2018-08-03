@@ -24,9 +24,9 @@ export default class SpanContext extends opentracing.SpanContext {
     baggage: any;
 
     constructor(
-        traceId,
-        spanId,
-        parentSpanId,
+        traceId: string,
+        spanId: string,
+        parentSpanId: string,
         baggage = {}) {
         super();
         this.traceId = traceId;
