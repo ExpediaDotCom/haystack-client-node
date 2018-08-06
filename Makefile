@@ -57,7 +57,6 @@ idl_codegen:
 
 .PHONY: npm_install
 npm_install:
-	rm -rf node_modules/grpc*
 	npm install
 
 example: build
