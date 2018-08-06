@@ -19,7 +19,7 @@ cache:
   - node_modules
 
 script:
-  - make build
+  - make build integration_tests
 
 before_deploy:
   - make prepare_publish
