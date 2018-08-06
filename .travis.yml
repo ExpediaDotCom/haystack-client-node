@@ -14,6 +14,10 @@ env:
     - TAG=${TRAVIS_TAG}
     - SHA=${TRAVIS_COMMIT}
 
+cache:
+  directories:
+  - node_modules
+
 script:
   - make build integration_tests
 
