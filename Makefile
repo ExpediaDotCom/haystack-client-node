@@ -26,10 +26,15 @@ test:
 
 .PHONY: integration_tests
 integration_tests:
-	#docker-compose -f integration-tests/docker-compose.yml pull	
 	docker-compose -f integration-tests/docker-compose.yml -p sandbox up -d
 	sleep 15
-	./node_modules/mocha/bin/mocha -r ./node_modules/ts-node/register tests/integration/**/*.ts
+	rm -rf ./node_modules/grpc*
+	docker run -it \
+		--network=sandbox_default \
+		-v $(PWD):/src \
+		-w /src \
+		node:6-alpine \
+		/bin/sh -c 'npm i && ./node_modules/mocha/bin/mocha -r ./node_modules/ts-node/register tests/integration/**/*.ts'
 	docker-compose -f integration-tests/docker-compose.yml -p sandbox stop
 
 .PHONY: compile

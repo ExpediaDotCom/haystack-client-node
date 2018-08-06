@@ -42,7 +42,7 @@ describe('Haystack Integration Tests', () => {
                     },
                     dispatcher: {
                         type: 'haystack_agent',
-                        agentHost: '127.0.0.1'
+                        agentHost: 'haystack_agent'
                     },
                     logger: new ConsoleLogger()
                 });
@@ -76,7 +76,7 @@ describe('Haystack Integration Tests', () => {
                     
                 const options = {
                     groupId: 'integration-test',
-                    kafkaHost: '127.0.0.1:9092',
+                    kafkaHost: 'kafkasvc:9092',
                     fromOffset: 'earliest' as ("earliest" | "latest" | "none")
                 };
                 const consumer = new kafka.ConsumerGroup(options, 'proto-spans');

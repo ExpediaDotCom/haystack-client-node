@@ -7,7 +7,7 @@ services:
     - kafkasvc
     environment:
       haystack_env_agents_spans_port: 35000
-      haystack_env_agents_spans_dispatchers_kafka_bootstrap_servers: "127.0.0.1:9092"
+      haystack_env_agents_spans_dispatchers_kafka_bootstrap_servers: "kafkasvc:9092"
     ports:
     - "35000:35000"
     entrypoint:
@@ -23,7 +23,7 @@ services:
      depends_on:
      - zookeeper
      environment:
-       KAFKA_ADVERTISED_HOST_NAME: "127.0.0.1"
+       KAFKA_ADVERTISED_HOST_NAME: "kafkasvc"
        KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181 
      volumes:
      - /var/run/docker.sock:/var/run/docker.sock
