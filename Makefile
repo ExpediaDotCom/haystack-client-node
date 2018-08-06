@@ -28,13 +28,13 @@ test:
 integration_tests:
 	docker-compose -f integration-tests/docker-compose.yml -p sandbox up -d
 	sleep 15
-	rm -rf ./node_modules/grpc*
 	docker run -it \
+	    --rm \
 		--network=sandbox_default \
-		-v $(PWD):/src \
-		-w /src \
+		-v $(PWD):/ws \
+		-w /ws \
 		node:6-alpine \
-		/bin/sh -c 'npm i && ./node_modules/mocha/bin/mocha -r ./node_modules/ts-node/register tests/integration/**/*.ts'
+		/bin/sh -c 'mkdir -p ws2 && cp -a src tests package.json  tsconfig.json ws2/ && cd ws2 && npm i && ./node_modules/mocha/bin/mocha -r ./node_modules/ts-node/register tests/integration/**/*.ts'
 	docker-compose -f integration-tests/docker-compose.yml -p sandbox stop
 
 .PHONY: compile
@@ -57,6 +57,7 @@ idl_codegen:
 
 .PHONY: npm_install
 npm_install:
+	rm -rf node_modules/grpc*
 	npm install
 
 example: build
