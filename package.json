@@ -13,9 +13,6 @@
     "type": "git",
     "url": "git://github.com/ExpediaDotCom/haystack-client-node.git"
   },
-  "scripts": {
-    "lint": "tslint -t msbuild -c tslint.json 'src/**/*.ts'"
-  },
   "contributors": [
     "Haystack <haystack@expedia.com>"
   ],
@@ -29,6 +26,8 @@
     "@types/node": "7.0.12",
     "@types/chai": "3.4.35",
     "@types/mocha": "2.2.40",
+    "@types/kafka-node": "2.0.7",
+    "kafka-node": "2.6.1",
     "chai": "^3.5.0",
     "grpc-tools": "1.6.6",
     "mocha": "^2.5.3",

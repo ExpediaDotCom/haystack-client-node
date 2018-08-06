@@ -15,7 +15,6 @@
  */
 
 import * as grpc from 'grpc';
-const messages  = require('../proto_idl_codegen/span_pb');
 const services  = require('../proto_idl_codegen/agent/spanAgent_grpc_pb');
 import {Dispatcher} from './dispatcher';
 import Span from '../span';
@@ -39,7 +38,7 @@ export default class RemoteDispatcher implements Dispatcher {
     }
 
     dispatch(span: Span, callback: (error) => void): void {
-        const proto = this._convertToProtoSpan(span);
+        const proto = Utils.convertToProtoSpan(span);
         this._client.dispatch(proto, (err, response) => {
             if (err) {
                 if (this._logger) {
@@ -57,73 +56,6 @@ export default class RemoteDispatcher implements Dispatcher {
                 }
             }
         });
-    }
-
-    private _convertToProtoSpan(span: Span): any {
-        const protoSpan = new messages.Span();
-        protoSpan.setServicename(span.serviceName());
-        protoSpan.setOperationname(span.operationName());
-        protoSpan.setTraceid(span.context().traceId);
-        protoSpan.setSpanid(span.context().spanId);
-        protoSpan.setParentspanid(span.context().parentSpanId);
-        protoSpan.setStarttime(span.startTime());
-        protoSpan.setDuration(span.duration());
-
-        const protoSpanTags = [];
-
-        const tags = span.tags();
-        for (const k in tags) {
-            if (tags.hasOwnProperty(k)) {
-                protoSpanTags.push(RemoteDispatcher._createProtoTag(k, tags[k]));
-            }
-        }
-
-        protoSpan.setTagsList(protoSpanTags);
-
-        const protoSpanLogs = [];
-        span.logs().forEach(log => {
-            const protoLog = new messages.Log();
-            const protoLogTags = [];
-            const kvPairs = log.keyValuePairs;
-            for (const k in kvPairs) {
-                if (kvPairs.hasOwnProperty(k)) {
-                    protoLogTags.push(RemoteDispatcher._createProtoTag(k, kvPairs[k]));
-                }
-            }
-            protoLog.setTimestamp(log.timestamp);
-            protoLog.setFieldsList(protoLogTags);
-            protoSpanLogs.push(protoLog);
-        });
-
-        protoSpan.setLogsList(protoSpanLogs);
-        return protoSpan;
-    }
-
-    private static _createProtoTag(key: string, value: any): any {
-        const protoTag = new messages.Tag();
-        protoTag.setKey(key);
-
-        const tagValue = value;
-        if (typeof tagValue === 'number') {
-            if (Utils.isFloatType(tagValue)) {
-                protoTag.setVdouble(tagValue);
-                protoTag.setType(messages.Tag.TagType.DOUBLE);
-            } else {
-                protoTag.setVlong(tagValue);
-                protoTag.setType(messages.Tag.TagType.LONG);
-            }
-        } else if (typeof tagValue === 'boolean') {
-            protoTag.setVbool(tagValue);
-            protoTag.setType(messages.Tag.TagType.BOOL);
-        } else if (typeof tagValue === 'string') {
-            protoTag.setVstr(tagValue);
-            protoTag.setType(messages.Tag.TagType.STRING);
-        } else {
-            protoTag.setVbytes(tagValue);
-            protoTag.setType(messages.Tag.TagType.BINARY);
-        }
-
-        return protoTag;
     }
 
     close(callback: () => void): void {

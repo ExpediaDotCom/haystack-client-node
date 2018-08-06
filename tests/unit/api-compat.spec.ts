@@ -14,7 +14,7 @@
  *       limitations under the License.
  */
 
-import Tracer from '../src/tracer';
+import Tracer from '../../src/tracer';
 
 describe('OpenTracing Api Compatibility Tests', () => {
 
