@@ -16,12 +16,12 @@
 import * as opentracing from 'opentracing';
 
 import { expect } from 'chai';
-import Tracer from '../src/tracer';
-import InMemoryDispatcher from '../src/dispatchers/in_memory';
-import StartSpanFields from '../src/start_span_fields';
+import Tracer from '../../src/tracer';
+import InMemoryDispatcher from '../../src/dispatchers/in_memory';
+import StartSpanFields from '../../src/start_span_fields';
 import {isUndefined} from 'util';
-import SpanContext from '../src/span_context';
-import Span from '../src/span';
+import SpanContext from '../../src/span_context';
+import Span from '../../src/span';
 
 const dummyServiceName = 'my-service';
 const dummyOperation = 'my-service-operation';

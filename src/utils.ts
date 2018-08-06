@@ -14,11 +14,13 @@
  *       limitations under the License.
  */
 
-import uuidv4 = require('uuid/v4');
+import * as uuid from 'uuid';
+import Span from './span';
+const messages  = require('./proto_idl_codegen/span_pb');
 
 export default class Utils {
     static randomUUID(): string {
-        return uuidv4();
+        return uuid.v4();
     }
 
     static assign(origObject, key, value): any {
@@ -56,5 +58,72 @@ export default class Utils {
 
     static isFloatType(value: number): boolean {
         return (value % 1 !== 0);
+    }
+
+    static convertToProtoSpan(span: Span): any {
+        const protoSpan = new messages.Span();
+        protoSpan.setServicename(span.serviceName());
+        protoSpan.setOperationname(span.operationName());
+        protoSpan.setTraceid(span.context().traceId);
+        protoSpan.setSpanid(span.context().spanId);
+        protoSpan.setParentspanid(span.context().parentSpanId);
+        protoSpan.setStarttime(span.startTime());
+        protoSpan.setDuration(span.duration());
+
+        const protoSpanTags = [];
+
+        const tags = span.tags();
+        for (const k in tags) {
+            if (tags.hasOwnProperty(k)) {
+                protoSpanTags.push(this._createProtoTag(k, tags[k]));
+            }
+        }
+
+        protoSpan.setTagsList(protoSpanTags);
+
+        const protoSpanLogs = [];
+        span.logs().forEach(log => {
+            const protoLog = new messages.Log();
+            const protoLogTags = [];
+            const kvPairs = log.keyValuePairs;
+            for (const k in kvPairs) {
+                if (kvPairs.hasOwnProperty(k)) {
+                    protoLogTags.push(this._createProtoTag(k, kvPairs[k]));
+                }
+            }
+            protoLog.setTimestamp(log.timestamp);
+            protoLog.setFieldsList(protoLogTags);
+            protoSpanLogs.push(protoLog);
+        });
+
+        protoSpan.setLogsList(protoSpanLogs);
+        return protoSpan;
+    }
+
+    private static _createProtoTag(key: string, value: any): any {
+        const protoTag = new messages.Tag();
+        protoTag.setKey(key);
+
+        const tagValue = value;
+        if (typeof tagValue === 'number') {
+            if (Utils.isFloatType(tagValue)) {
+                protoTag.setVdouble(tagValue);
+                protoTag.setType(messages.Tag.TagType.DOUBLE);
+            } else {
+                protoTag.setVlong(tagValue);
+                protoTag.setType(messages.Tag.TagType.LONG);
+            }
+        } else if (typeof tagValue === 'boolean') {
+            protoTag.setVbool(tagValue);
+            protoTag.setType(messages.Tag.TagType.BOOL);
+        } else if (typeof tagValue === 'string') {
+            protoTag.setVstr(tagValue);
+            protoTag.setType(messages.Tag.TagType.STRING);
+        } else {
+            protoTag.setVbytes(tagValue);
+            protoTag.setType(messages.Tag.TagType.BINARY);
+        }
+
+        return protoTag;
     }
 }

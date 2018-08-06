@@ -22,7 +22,15 @@ prepare_publish:
 
 .PHONY: test
 test:
-	./node_modules/mocha/bin/mocha -r ./node_modules/ts-node/register tests/**/*.ts
+	./node_modules/mocha/bin/mocha -r ./node_modules/ts-node/register tests/unit/**/*.ts
+
+.PHONY: integration_tests
+integration_tests:
+	#docker-compose -f integration-tests/docker-compose.yml pull	
+	docker-compose -f integration-tests/docker-compose.yml -p sandbox up -d
+	sleep 15
+	./node_modules/mocha/bin/mocha -r ./node_modules/ts-node/register tests/integration/**/*.ts
+	docker-compose -f integration-tests/docker-compose.yml -p sandbox stop
 
 .PHONY: compile
 compile:

@@ -1,7 +1,7 @@
 const pkginfo = require('npm-registry-package-info');
 const semver = require('semver');
+const { resolve }  = require('path');
 const fs = require('fs');
-
 
 const moduleName = 'haystack-client';
 
@@ -23,8 +23,7 @@ pkginfo(opts, (error, data) => {
     if (semver.lte(releaseVersion, currentVersion)) {
         throw new Error(`Current haystack-client on npm registry has greater than or equal new release version ${releaseVersion}. Check your git tag version`);
     }
-    const rawPackageJson = fs.readFileSync('package.json');
-    const packageJson = JSON.parse(rawPackageJson);
+    const packageJson = require(resolve(process.cwd(), 'package.json'));
     packageJson.version = releaseVersion;
     fs.writeFileSync('package.json', JSON.stringify(packageJson, null, ' '));
 });
