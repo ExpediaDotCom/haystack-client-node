@@ -19,9 +19,10 @@ import RemoteDispatcher from './dispatchers/remote';
 import {Dispatcher} from './dispatchers/dispatcher';
 import InMemoryDispatcher from './dispatchers/in_memory';
 import NoopDispatcher from './dispatchers/noop';
+import { TracerConfig } from './tracer-config';
 
 export default class Configuration {
-    static _getDispatcher(config): Dispatcher {
+    static _getDispatcher(config: TracerConfig): Dispatcher {
 
         const dispatcher = config.dispatcher;
         if (dispatcher) {

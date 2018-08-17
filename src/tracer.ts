@@ -21,13 +21,14 @@ import {Dispatcher} from './dispatchers/dispatcher';
 import Span from './span';
 import SpanContext from './span_context';
 import NoopDispatcher from './dispatchers/noop';
-import NullLogger from './logger';
+import { Logger, NullLogger } from './logger/index';
 import Utils from './utils';
 import PropagationRegistry from './propagators/propagation_registry';
 import TextMapPropagator from './propagators/textmap_propagator';
 import URLCodex from './propagators/url_codex';
 import StartSpanFields from './start_span_fields';
 import BinaryPropagator from './propagators/binary_propagator';
+import { TracerConfig } from './tracer-config';
 
 export default class Tracer extends opentracing.Tracer {
     _serviceName: string;
@@ -39,7 +40,7 @@ export default class Tracer extends opentracing.Tracer {
     constructor(serviceName: string,
                 dispatcher = new NoopDispatcher(),
                 commonTags: any = {},
-                logger = new NullLogger()) {
+                logger: Logger = new NullLogger()) {
         super();
         this._commonTags = commonTags || {};
         this._serviceName = serviceName;
@@ -163,7 +164,7 @@ export default class Tracer extends opentracing.Tracer {
         return propagator.extract(carrier);
     }
 
-    static initTracer(config): opentracing.Tracer {
+    static initTracer(config: TracerConfig): opentracing.Tracer {
         if (config.disable) {
             return new opentracing.Tracer();
         }

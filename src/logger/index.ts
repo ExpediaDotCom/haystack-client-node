@@ -14,9 +14,5 @@
  *       limitations under the License.
  */
 
-export default class NullLogger {
-    debug(msg: string): void {}
-    info(msg: string): void {}
-    warn(msg: string): void {}
-    error(msg: string): void {}
-}
+export * from './null-logger';
+export * from './logger';

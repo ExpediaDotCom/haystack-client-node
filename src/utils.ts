@@ -16,6 +16,7 @@
 
 import * as uuid from 'uuid';
 import Span from './span';
+
 const messages  = require('./proto_idl_codegen/span_pb');
 
 export default class Utils {
