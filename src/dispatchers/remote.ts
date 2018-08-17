@@ -18,14 +18,14 @@ import * as grpc from 'grpc';
 const services  = require('../proto_idl_codegen/agent/spanAgent_grpc_pb');
 import {Dispatcher} from './dispatcher';
 import Span from '../span';
-import NullLogger from '../logger';
+import { Logger, NullLogger } from '../logger';
 import Utils from '../utils';
 
 export default class RemoteDispatcher implements Dispatcher {
     _client: any;
     _logger: any;
 
-    constructor(agentHost: string, agentPort: number, logger = new NullLogger()) {
+    constructor(agentHost: string, agentPort: number, logger: Logger = new NullLogger()) {
         agentHost = agentHost || 'haystack-agent';
         agentPort = agentPort || 35000;
         logger.info(`Initializing the remote dispatcher, connecting at ${agentHost}:${agentPort}`);

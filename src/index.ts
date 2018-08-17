@@ -23,11 +23,14 @@ import InMemoryDispatcher from './dispatchers/in_memory';
 import FileDispatcher from './dispatchers/file';
 import AgentDispatcher from './dispatchers/remote';
 import Configuration from './configuration';
+import { Logger } from './logger';
+import { TracerConfig } from './tracer-config';
 
 import * as opentracing from 'opentracing';
 
 export {
     Configuration,
+    TracerConfig,
     Tracer,
     SpanContext,
     Span,
@@ -35,7 +38,8 @@ export {
     InMemoryDispatcher,
     FileDispatcher,
     AgentDispatcher,
-    opentracing
+    opentracing,
+    Logger
 };
 
 module.exports = {
