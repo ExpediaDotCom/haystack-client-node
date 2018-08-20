@@ -22,6 +22,7 @@ import NoopDispatcher from './dispatchers/noop';
 import InMemoryDispatcher from './dispatchers/in_memory';
 import FileDispatcher from './dispatchers/file';
 import AgentDispatcher from './dispatchers/remote';
+import { DispatcherConfig } from './dispatchers/dispatcher-config';
 import Configuration from './configuration';
 import { Logger } from './logger';
 import { TracerConfig } from './tracer-config';
@@ -38,6 +39,7 @@ export {
     InMemoryDispatcher,
     FileDispatcher,
     AgentDispatcher,
+    DispatcherConfig,
     opentracing,
     Logger
 };

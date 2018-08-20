@@ -14,12 +14,13 @@
  *       limitations under the License.
  */
 
-import { Logger } from './logger/index';
+import { Logger } from './logger';
+import { DispatcherConfig } from './dispatchers/dispatcher-config';
 
 export interface TracerConfig {
     disable?: boolean;
     serviceName: string;
     logger?: Logger;
-    commonTags?: any;
-    dispatcher?: any;
+    commonTags?: { [key: string]: any };
+    dispatcher?: DispatcherConfig;
 }

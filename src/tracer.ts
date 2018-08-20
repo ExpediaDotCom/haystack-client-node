@@ -21,7 +21,7 @@ import {Dispatcher} from './dispatchers/dispatcher';
 import Span from './span';
 import SpanContext from './span_context';
 import NoopDispatcher from './dispatchers/noop';
-import { Logger, NullLogger } from './logger/index';
+import { Logger, NullLogger } from './logger';
 import Utils from './utils';
 import PropagationRegistry from './propagators/propagation_registry';
 import TextMapPropagator from './propagators/textmap_propagator';
@@ -38,8 +38,8 @@ export default class Tracer extends opentracing.Tracer {
     _registry: PropagationRegistry;
 
     constructor(serviceName: string,
-                dispatcher = new NoopDispatcher(),
-                commonTags: any = {},
+                dispatcher: Dispatcher = new NoopDispatcher(),
+                commonTags: { [key: string]: any } = {},
                 logger: Logger = new NullLogger()) {
         super();
         this._commonTags = commonTags || {};
