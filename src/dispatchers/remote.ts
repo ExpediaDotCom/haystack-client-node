@@ -25,9 +25,7 @@ export default class RemoteDispatcher implements Dispatcher {
     _client: any;
     _logger: any;
 
-    constructor(agentHost: string, agentPort: number, logger: Logger = new NullLogger()) {
-        agentHost = agentHost || 'haystack-agent';
-        agentPort = agentPort || 35000;
+    constructor(agentHost: string = 'haystack-agent', agentPort: number = 35000, logger: Logger = new NullLogger()) {
         logger.info(`Initializing the remote dispatcher, connecting at ${agentHost}:${agentPort}`);
         this._client = new services.SpanAgentClient(`${agentHost}:${agentPort}`, grpc.credentials.createInsecure());
         this._logger = logger;
