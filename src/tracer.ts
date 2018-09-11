@@ -29,10 +29,12 @@ import URLCodex from './propagators/url_codex';
 import StartSpanFields from './start_span_fields';
 import BinaryPropagator from './propagators/binary_propagator';
 import { TracerConfig } from './tracer-config';
+import { Generator, UUIDGenerator } from './generators';
 
 export default class Tracer extends opentracing.Tracer {
     _serviceName: string;
     _dispatcher: Dispatcher;
+    _idGenerator: Generator;
     _commonTags: { [key: string]: any };
     _logger: any;
     _registry: PropagationRegistry;
@@ -40,7 +42,8 @@ export default class Tracer extends opentracing.Tracer {
     constructor(serviceName: string,
                 dispatcher: Dispatcher = new NoopDispatcher(),
                 commonTags: { [key: string]: any } = {},
-                logger: Logger = new NullLogger()) {
+                logger: Logger = new NullLogger(),
+                idGenerator: Generator = new UUIDGenerator()) {
         super();
         this._commonTags = commonTags || {};
         this._serviceName = serviceName;
@@ -50,6 +53,7 @@ export default class Tracer extends opentracing.Tracer {
         this._registry.register(opentracing.FORMAT_TEXT_MAP, new TextMapPropagator());
         this._registry.register(opentracing.FORMAT_BINARY, new BinaryPropagator());
         this._registry.register(opentracing.FORMAT_HTTP_HEADERS, new TextMapPropagator(new URLCodex()));
+        this._idGenerator = idGenerator;
     }
 
     startSpan(operationName: string, fields?: StartSpanFields): Span {
@@ -83,7 +87,7 @@ export default class Tracer extends opentracing.Tracer {
             }
         }
 
-        const ctx = Tracer._createSpanContext(parent, fields.callerSpanContext);
+        const ctx = this._createSpanContext(parent, fields.callerSpanContext);
         return this._spanStart(operationName, ctx, startTime, references, spanTags);
     }
 
@@ -98,16 +102,16 @@ export default class Tracer extends opentracing.Tracer {
         return span;
     }
 
-    static _createSpanContext(parent: SpanContext, callerContext: SpanContext): SpanContext {
+    _createSpanContext(parent: SpanContext, callerContext: SpanContext): SpanContext {
         if (!parent || !parent.isValid) {
             if (callerContext) {
                 return new SpanContext(callerContext.traceId, callerContext.spanId, callerContext.parentSpanId, callerContext.baggage);
             } else {
                 const parentBaggage = parent && parent.baggage;
-                return new SpanContext(Utils.randomUUID(), Utils.randomUUID(), parentBaggage);
+                return new SpanContext(this._idGenerator.generate(), this._idGenerator.generate(), parentBaggage);
             }
         } else {
-            return new SpanContext(parent.traceId, Utils.randomUUID(), parent.spanId, parent.baggage);
+            return new SpanContext(parent.traceId, this._idGenerator.generate(), parent.spanId, parent.baggage);
         }
     }
 
@@ -178,7 +182,6 @@ export default class Tracer extends opentracing.Tracer {
         if (config.logger) {
             config.logger.info(`Initializing Haystack Tracer with ${dispatcher.name()}`);
         }
-
-        return new Tracer(config.serviceName, dispatcher, config.commonTags, config.logger);
+        return new Tracer(config.serviceName, dispatcher, config.commonTags, config.logger, config.idGenerator);
     }
 }
