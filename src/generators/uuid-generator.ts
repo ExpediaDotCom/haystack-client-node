@@ -14,15 +14,11 @@
  *       limitations under the License.
  */
 
-import { Logger } from './logger';
-import { Generator } from './generators';
-import { DispatcherConfig } from './dispatchers/dispatcher-config';
+import { Generator } from './id-generator';
+import Utils from '../utils';
 
-export interface TracerConfig {
-    disable?: boolean;
-    serviceName: string;
-    logger?: Logger;
-    commonTags?: { [key: string]: any };
-    dispatcher?: DispatcherConfig;
-    idGenerator?: Generator;
+export class UUIDGenerator implements Generator {
+    generate(): string {
+        return Utils.randomUUID();
+    }
 }

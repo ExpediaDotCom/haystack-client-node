@@ -19,8 +19,9 @@ import * as opentracing from 'opentracing';
 import SpanContext from '../../src/span_context';
 import * as kafka from 'kafka-node';
 import { expect } from 'chai';
+import { Logger } from '../../src/logger'
 
-class ConsoleLogger {
+class ConsoleLogger implements Logger {
     log(msg) { console.log(msg); }
     debug(msg: string): void { this.log(msg); }
     info(msg: string): void { this.log(msg); }
@@ -42,7 +43,7 @@ describe('Haystack Integration Tests', () => {
                         type: 'haystack_agent',
                         agentHost: 'haystack_agent'
                     },
-                    logger: new ConsoleLogger()
+                    logger: new ConsoleLogger(),
                 });
 
                 const serverSpan = tracer.startSpan('my-operation', {

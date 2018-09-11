@@ -14,15 +14,6 @@
  *       limitations under the License.
  */
 
-import { Logger } from './logger';
-import { Generator } from './generators';
-import { DispatcherConfig } from './dispatchers/dispatcher-config';
-
-export interface TracerConfig {
-    disable?: boolean;
-    serviceName: string;
-    logger?: Logger;
-    commonTags?: { [key: string]: any };
-    dispatcher?: DispatcherConfig;
-    idGenerator?: Generator;
+export interface Generator {
+    generate(): string;
 }
