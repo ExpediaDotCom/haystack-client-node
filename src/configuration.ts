@@ -15,10 +15,11 @@
  */
 
 import FileDispatcher from './dispatchers/file';
-import RemoteDispatcher from './dispatchers/remote';
-import {Dispatcher} from './dispatchers/dispatcher';
+import RemoteGrpcAgentDispatcher from './dispatchers/grpc_agent';
+import { Dispatcher } from './dispatchers/dispatcher';
 import InMemoryDispatcher from './dispatchers/in_memory';
 import NoopDispatcher from './dispatchers/noop';
+import HttpCollectorDispatcher from './dispatchers/http_collector';
 import { DispatcherConfig } from './dispatchers/dispatcher-config';
 import { TracerConfig } from './tracer-config';
 
@@ -31,7 +32,9 @@ export default class Configuration {
                 case 'file':
                     return new FileDispatcher(dispatcher.filePath);
                 case 'haystack_agent':
-                    return new RemoteDispatcher(dispatcher.agentHost, dispatcher.agentPort, config.logger);
+                    return new RemoteGrpcAgentDispatcher(dispatcher.agentHost, dispatcher.agentPort, config.logger);
+                case 'http_collector':
+                    return new HttpCollectorDispatcher(dispatcher.collectorUrl, dispatcher.collectorHttpHeaders, config.logger);
                 case 'in_memory':
                     return new InMemoryDispatcher();
                 default:

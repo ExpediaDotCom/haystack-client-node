@@ -21,7 +21,7 @@ import Tracer from './tracer';
 import NoopDispatcher from './dispatchers/noop';
 import InMemoryDispatcher from './dispatchers/in_memory';
 import FileDispatcher from './dispatchers/file';
-import AgentDispatcher from './dispatchers/remote';
+import AgentDispatcher from './dispatchers/grpc_agent';
 import { DispatcherConfig } from './dispatchers/dispatcher-config';
 import Configuration from './configuration';
 import { Logger } from './logger';

@@ -19,4 +19,6 @@ export interface DispatcherConfig {
     filePath?: string;
     agentHost?: string;
     agentPort?: number;
+    collectorUrl?: string;
+    collectorHttpHeaders?: { [key: string]: any };
 }
