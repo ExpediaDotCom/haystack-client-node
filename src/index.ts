@@ -22,6 +22,7 @@ import NoopDispatcher from './dispatchers/noop';
 import InMemoryDispatcher from './dispatchers/in_memory';
 import FileDispatcher from './dispatchers/file';
 import AgentDispatcher from './dispatchers/grpc_agent';
+import HttpCollectorDispatcher from './dispatchers/http_collector';
 import { DispatcherConfig } from './dispatchers/dispatcher-config';
 import Configuration from './configuration';
 import { Logger } from './logger';
@@ -39,6 +40,7 @@ export {
     InMemoryDispatcher,
     FileDispatcher,
     AgentDispatcher,
+    HttpCollectorDispatcher,
     DispatcherConfig,
     opentracing,
     Logger
