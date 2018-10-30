@@ -23,5 +23,4 @@ export default class StartSpanFields implements opentracing.SpanOptions {
     references?: opentracing.Reference[];
     tags?: any;
     startTime?: number;
-    callerSpanContext?: SpanContext;
 }

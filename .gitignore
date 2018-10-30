@@ -65,3 +65,4 @@ src/proto_idl_codegen/
 dist/
 .idea/typescript-compiler.xml
 *.iml
+ws2/
