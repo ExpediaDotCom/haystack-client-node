@@ -64,7 +64,7 @@ describe('Tracer tests', () => {
             expectSpansInStore(inMemSpanStore, 1);
             const receivedSpan = inMemSpanStore.spans()[0];
             expect(receivedSpan.operationName()).eq(dummyOperation);
-            expect(isUndefined(receivedSpan.context().parentSpanId)).eq(true);
+            expect(receivedSpan.context().parentSpanId).eq('');
         });
 
         it('should start and dispatch server and client spans', () => {
@@ -97,7 +97,7 @@ describe('Tracer tests', () => {
             expect(receivedServerSpan.operationName()).eq(dummyOperation);
             expect(receivedClientSpan.duration() <= receivedServerSpan.duration()).eq(true);
             expect(receivedClientSpan.context().parentSpanId).eq(receivedServerSpan.context().spanId);
-            expect(isUndefined(receivedServerSpan.context().parentSpanId)).eq(true);
+            expect(receivedServerSpan.context().parentSpanId).eq('');
             expect(receivedServerSpan.context().traceId).eq(receivedClientSpan.context().traceId);
 
             expect(receivedClientSpan.logs().length).eq(1);

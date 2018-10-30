@@ -121,7 +121,7 @@ export default class Tracer extends opentracing.Tracer {
     private _createSpanContext(parent: SpanContext, spanTags: { [key: string]: any }): SpanContext {
         if (!parent || !parent.isValid) {
             const parentBaggage = parent && parent.baggage;
-            return new SpanContext(this._idGenerator.generate(), this._idGenerator.generate(), parentBaggage);
+            return new SpanContext(this._idGenerator.generate(), this._idGenerator.generate(), '', parentBaggage);
         } else {
             if (!this._useDualSpanMode && (this.isServerSpan(spanTags) || parent.isExtractedContext())) {
                 return new SpanContext(parent.traceId, parent.spanId, parent.parentSpanId, parent.baggage);
