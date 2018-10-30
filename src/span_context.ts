@@ -22,17 +22,20 @@ export default class SpanContext extends opentracing.SpanContext {
     spanId: string;
     parentSpanId: string;
     baggage: any;
+    extractedContext: boolean;
 
     constructor(
         traceId: string,
         spanId: string,
         parentSpanId: string,
-        baggage = {}) {
+        baggage = {},
+        extractedContext: boolean = false) {
         super();
         this.traceId = traceId;
         this.spanId = spanId;
         this.parentSpanId = parentSpanId;
         this.baggage = baggage;
+        this.extractedContext = extractedContext;
     }
 
     setTraceId(traceId: string): void {
@@ -56,7 +59,15 @@ export default class SpanContext extends opentracing.SpanContext {
             newBaggage);
     }
 
+    setExtractedContext(): void {
+        this.extractedContext = true;
+    }
+
     isValid(): boolean {
         return !!(this.traceId && this.spanId);
+    }
+
+    isExtractedContext(): boolean {
+        return this.extractedContext;
     }
 }

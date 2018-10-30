@@ -16,10 +16,10 @@
 
 import Tracer from '../../src/tracer';
 import * as opentracing from 'opentracing';
-import SpanContext from '../../src/span_context';
 import * as kafka from 'kafka-node';
 import { expect } from 'chai';
 import { Logger } from '../../src/logger'
+const messages  = require('../../src/proto_idl_codegen/span_pb');
 
 class ConsoleLogger implements Logger {
     log(msg) { console.log(msg); }
@@ -29,28 +29,24 @@ class ConsoleLogger implements Logger {
     error(msg: string): void { this.log(msg); }
 }
 
-describe('Haystack Integration Tests', () => {
-    describe('Tracer Test', () => {
-        return it("should generate spans and push to haystack-agent", function(done) {
-                this.timeout(6000);
-                const TraceId = '1848fadd-fa16-4b3e-8ad1-6d73339bbee7'
-                const tracer = Tracer.initTracer({
-                    serviceName: 'my-service',
-                    commonTags: {
-                        'my-service-version': '0.1.0'
-                    },
-                    dispatcher: {
-                        type: 'haystack_agent',
-                        agentHost: 'haystack_agent'
-                    },
-                    logger: new ConsoleLogger(),
-                });
+const TraceId = '1848fadd-fa16-4b3e-8ad1-6d73339bbee7';
+const SpanId = '7a7cc5bf-796e-4527-9b42-13ae5766c6fd';
+const ParentSpanId = 'e96de653-ad6e-4ad5-b437-e81fd9d2d61d';
 
+const options = {
+    groupId: 'integration-test',
+    kafkaHost: 'kafkasvc:9092',
+    fromOffset: 'earliest' as ("earliest" | "latest" | "none"),
+    encoding: 'buffer',
+    keyEncoding: 'utf8'
+};
+
+const consumer = new kafka.ConsumerGroup(options, 'proto-spans');
+
+const executeTest = (consumer: kafka.ConsumerGroup, tracer: opentracing.Tracer, done) => {
+    const carrier = {'Trace-ID': TraceId , 'Span-ID': SpanId, 'Parent-ID': ParentSpanId, 'Baggage-myKey': 'myVal'};
                 const serverSpan = tracer.startSpan('my-operation', {
-                    childOf: new SpanContext(
-                        TraceId,
-                        '7a7cc5bf-796e-4527-9b42-13ae5766c6fd',
-                        'e96de653-ad6e-4ad5-b437-e81fd9d2d61d')
+                    childOf: tracer.extract(opentracing.FORMAT_TEXT_MAP, carrier)
                 })
                 .setTag(opentracing.Tags.SPAN_KIND, 'server')
                 .setTag(opentracing.Tags.HTTP_METHOD, 'GET');
@@ -70,23 +66,30 @@ describe('Haystack Integration Tests', () => {
 
                 var serverSpanReceived = 0;
                 var clientSpanReceived = 0;
-                    
-                const options = {
-                    groupId: 'integration-test',
-                    kafkaHost: 'kafkasvc:9092',
-                    fromOffset: 'earliest' as ("earliest" | "latest" | "none")
-                };
-                const consumer = new kafka.ConsumerGroup(options, 'proto-spans');
+
                 consumer.on('message', (kafkaMessage) => {
                     expect(kafkaMessage.key).eq(TraceId);
 
                     const spanBuffer = kafkaMessage.value as Buffer;
-                    //TODO: figure out why Buffer is failing to deserialize into a proto object
-                    if (spanBuffer.includes('7a7cc5bf-796e-4527-9b42-13ae5766c6fd')) {
+                    const protoSpan = messages.Span.deserializeBinary(spanBuffer);
+                    
+                    var isServerSpan = false;
+                    protoSpan.getTagsList().forEach((tag) => {
+                        if (tag.getKey() === 'span.kind' && tag.getVstr() === 'server') {
+                            isServerSpan = true;
+                        }
+                    });
+                    if (isServerSpan) {
                         serverSpanReceived = serverSpanReceived + 1;
+                        expect(protoSpan.getTraceid()).eq(TraceId);
+                        expect(protoSpan.getSpanid()).eq(SpanId);
+                        expect(protoSpan.getParentspanid()).eq(ParentSpanId);
                     } else {
                         clientSpanReceived = clientSpanReceived + 1;
-                    }                    
+                        expect(protoSpan.getTraceid()).eq(TraceId);
+                        expect(protoSpan.getSpanid() === SpanId).eq(false);
+                        expect(protoSpan.getParentspanid()).eq(SpanId);
+                    }
                 });
 
                 setTimeout(() => {
@@ -94,6 +97,44 @@ describe('Haystack Integration Tests', () => {
                     expect(clientSpanReceived).eq(1);
                     done();
                 }, 5000);
+            }
+
+describe('Haystack Integration Tests', () => {
+    describe('Tracer Test with haystack agent', () => {
+        return it("should generate spans and push to haystack-agent", function(done) {
+                this.timeout(6000);
+            
+                const tracer = Tracer.initTracer({
+                    serviceName: 'my-service',
+                    commonTags: {
+                        'my-service-version': '0.1.0'
+                    },
+                    dispatcher: {
+                        type: 'haystack_agent',
+                        agentHost: 'haystack_agent'
+                    },
+                    logger: new ConsoleLogger(),
+                });
+                executeTest(consumer, tracer, done);
+            
             });
+    });
+
+    describe('Tracer Test with haystack collector', () => {
+        return it("should generate spans and push to haystack-collector", function(done) {
+            this.timeout(6000);
+            const tracer = Tracer.initTracer({
+                serviceName: 'my-service',
+                commonTags: {
+                    'my-service-version': '0.1.0'
+                },
+                dispatcher: {
+                    type: 'http_collector',
+                    collectorUrl: 'http://haystack_collector:8080/span'
+                },
+                logger: new ConsoleLogger(),
+            });
+            executeTest(consumer, tracer, done);
+        });
     });
 });

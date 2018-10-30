@@ -27,11 +27,11 @@ export default class HttpCollectorDispatcher implements Dispatcher {
     _headers: { [key: string]: any };
     _logger: Logger;
 
-    constructor(_collectorUrl: string = 'http://localhost:8080/span', headers: { [key: string]: any } = {}, logger: Logger = new NullLogger()) {
-        this._collectorUrl = _collectorUrl;
-        this._headers = headers;
+    constructor(collectorUrl: string = 'http://haystack-collector:8080/span', headers: { [key: string]: any } = {}, logger: Logger = new NullLogger()) {
+        this._collectorUrl = collectorUrl;
+        this._headers = headers || {};
         this._logger = logger;
-        this._logger.info(`Initializing the http collector dispatcher, connecting at ${_collectorUrl}`);
+        this._logger.info(`Initializing the http collector dispatcher, connecting at ${this._collectorUrl}`);
     }
 
     name(): string {

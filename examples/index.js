@@ -45,6 +45,9 @@ const config = {
         // or
 
         // type: 'haystack_agent'
+
+        // or
+        // type: 'http_collector'
     },
     logger: logger
 };

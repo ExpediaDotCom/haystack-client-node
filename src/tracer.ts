@@ -38,12 +38,14 @@ export default class Tracer extends opentracing.Tracer {
     _commonTags: { [key: string]: any };
     _logger: any;
     _registry: PropagationRegistry;
+    _useDualSpanMode: boolean;
 
     constructor(serviceName: string,
                 dispatcher: Dispatcher = new NoopDispatcher(),
                 commonTags: { [key: string]: any } = {},
                 logger: Logger = new NullLogger(),
-                idGenerator: Generator = new UUIDGenerator()) {
+                idGenerator: Generator = new UUIDGenerator(),
+                useDualSpanMode: boolean = false) {
         super();
         this._commonTags = commonTags || {};
         this._serviceName = serviceName;
@@ -54,6 +56,7 @@ export default class Tracer extends opentracing.Tracer {
         this._registry.register(opentracing.FORMAT_BINARY, new BinaryPropagator());
         this._registry.register(opentracing.FORMAT_HTTP_HEADERS, new TextMapPropagator(new URLCodex()));
         this._idGenerator = idGenerator;
+        this._useDualSpanMode = useDualSpanMode;
     }
 
     startSpan(operationName: string, fields?: StartSpanFields): Span {
@@ -87,7 +90,7 @@ export default class Tracer extends opentracing.Tracer {
             }
         }
 
-        const ctx = this._createSpanContext(parent, fields.callerSpanContext);
+        const ctx = this._createSpanContext(parent, spanTags);
         return this._spanStart(operationName, ctx, startTime, references, spanTags);
     }
 
@@ -102,16 +105,29 @@ export default class Tracer extends opentracing.Tracer {
         return span;
     }
 
-    _createSpanContext(parent: SpanContext, callerContext: SpanContext): SpanContext {
+    private isServerSpan(spanTags: { [key: string]: any }): boolean {
+        const spanKind = spanTags[opentracing.Tags.SPAN_KIND];
+        return spanKind && (spanKind === 'server');
+    }
+
+    // This is a check to see if the tracer is configured to support single
+    // single span type (Zipkin style shared span id) or
+    // dual span type (client and server having their own span ids ).
+    // a. If tracer is not of dualSpanType and if it is a server span then we
+    // just return the parent context with the same shared span ids
+    // b. If tracer is not of dualSpanType and if the parent context is an extracted one from the wire
+    // then we assume this is the first span in the server and so just return the parent context
+    // with the same shared span ids
+    private _createSpanContext(parent: SpanContext, spanTags: { [key: string]: any }): SpanContext {
         if (!parent || !parent.isValid) {
-            if (callerContext) {
-                return new SpanContext(callerContext.traceId, callerContext.spanId, callerContext.parentSpanId, callerContext.baggage);
-            } else {
-                const parentBaggage = parent && parent.baggage;
-                return new SpanContext(this._idGenerator.generate(), this._idGenerator.generate(), parentBaggage);
-            }
+            const parentBaggage = parent && parent.baggage;
+            return new SpanContext(this._idGenerator.generate(), this._idGenerator.generate(), parentBaggage);
         } else {
-            return new SpanContext(parent.traceId, this._idGenerator.generate(), parent.spanId, parent.baggage);
+            if (!this._useDualSpanMode && (this.isServerSpan(spanTags) || parent.isExtractedContext())) {
+                return new SpanContext(parent.traceId, parent.spanId, parent.parentSpanId, parent.baggage);
+            } else {
+                return new SpanContext(parent.traceId, this._idGenerator.generate(), parent.spanId, parent.baggage);
+            }
         }
     }
 
@@ -165,7 +181,11 @@ export default class Tracer extends opentracing.Tracer {
             throw new Error('extractor is not supported for format=' + format);
         }
 
-        return propagator.extract(carrier);
+        const ctx = propagator.extract(carrier);
+        if (ctx) {
+            ctx.setExtractedContext();
+        }
+        return ctx;
     }
 
     static initTracer(config: TracerConfig): opentracing.Tracer {
