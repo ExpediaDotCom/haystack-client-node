@@ -58,32 +58,52 @@ const tracer = initTracer(config);
 /// now create a span, for e.g. at the time of incoming REST call.
 /// Make sure to add SPAN_KIND tag. Possible values are 'server' or 'client'.
 /// Important: if you are receiving TraceId, SpanId, ParentSpanId in the http headers or message payload of your incoming REST call,
-/// then create a SpanContext with those IDs and initialize the tracer with a childOf the received SpanContext
+/// then either use the Extractor to create a SpanContext or create by yourself. 
+//  Initialize the tracer with a childOf this newly built SpanContext
 
+// Use the exatractor to create SpanContext
 const serverSpan = tracer
-    .startSpan('dummy-operation', {
-        childOf: new SpanContext(
-            '1848fadd-fa16-4b3e-8ad1-6d73339bbee7',
-            '7a7cc5bf-796e-4527-9b42-13ae5766c6fd',
-            'e96de653-ad6e-4ad5-b437-e81fd9d2d61d')
+    .startSpan('/foo', {
+        childOf: tracer.extract(opentracing.FORMAT_HTTP_HEADERS, {
+            'Trace-ID': '1848fadd-fa16-4b3e-8ad1-6d73339bbee7',
+            'Span-ID': '7a7cc5bf-796e-4527-9b42-13ae5766c6fd',
+            'Parent-ID': 'e96de653-ad6e-4ad5-b437-e81fd9d2d61d'
+        }),
+        tags: {
+            'span.kind': 'server',
+            'http.method': 'GET'
+        }
     })
-    .setTag(opentracing.Tags.SPAN_KIND, 'server')
-    .setTag(opentracing.Tags.HTTP_METHOD, 'GET');
+// you can add more tags on server span later in the workflow
+serverSpan.setTag(opentracing.Tags.ERROR, true);
+
+// Or
+// const serverSpan = tracer
+//     .startSpan('/foo', {
+//         childOf: new SpanContext(
+//             '1848fadd-fa16-4b3e-8ad1-6d73339bbee7',
+//             '7a7cc5bf-796e-4527-9b42-13ae5766c6fd',
+//             'e96de653-ad6e-4ad5-b437-e81fd9d2d61d'),
+//         tags: {
+//             'span.kind': 'server'
+//         }
+//     })
+// you can add more tags on server span later in the workflow
+// serverSpan.setTag(opentracing.Tags.ERROR, true);  
+
 
 /// Or if you are the root service
 
 // const serverSpan = tracer
-//     .startSpan('dummy-operation')
-//     .setTag(opentracing.Tags.SPAN_KIND, 'server')
+//     .startSpan('dummy-operation', tags: {'span.kind': 'client'})
 //     .setTag(opentracing.Tags.HTTP_METHOD, 'GET');
-
 
 
 
 /// now say service is calling downstream service, then you start another span - a client span
 /// since this span is a child of the main serverSpan, so pass it along as `childOf` attribute.
 /// library will setup the traceId, spanId and parentSpanId by itself.
-const clientChildSpan = tracer.startSpan('downstream-service-call', {
+const clientChildSpan = tracer.startSpan('/bar', {
     childOf: serverSpan,
     tags: {
         'span.kind': 'client' // Note `span.kind` is now `client`
