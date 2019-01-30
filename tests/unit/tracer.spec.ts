@@ -131,7 +131,8 @@ describe('Tracer tests', () => {
             const tracer = new Tracer(dummyServiceName, inMemSpanStore, commonTags);
 
             const startServerSpanFields = new StartSpanFields();
-            const carrier = {'Trace-ID': 'T1' , 'Span-ID': 'S1', 'Parent-ID': 'P1', 'Baggage-myKey': 'myVal'};
+            console.log('starting .....');
+            const carrier = {'Trace-ID': 'T1' , 'Span-ID': 'S1', 'parent-id': 'P1', 'Baggage-myKey': 'myVal', 'baggage-mylowercasekey': 'myval'};
             const clientSpanContext = tracer.extract(opentracing.FORMAT_TEXT_MAP, carrier);
             startServerSpanFields.childOf = clientSpanContext;
             const serverSpan = tracer.startSpan(dummyOperation, startServerSpanFields);
@@ -140,10 +141,12 @@ describe('Tracer tests', () => {
             
             serverSpan.finish();
             expect(inMemSpanStore.spans().length).equal(1);
-            const receviedSpan = inMemSpanStore.spans()[0];
-            expect(receviedSpan.context().traceId).eq('T1');
-            expect(receviedSpan.context().spanId === 'S1').eq(true);
-            expect(receviedSpan.context().parentSpanId).eq('P1');
+            const receivedSpan = inMemSpanStore.spans()[0];
+            expect(receivedSpan.context().traceId).eq('T1');
+            expect(receivedSpan.context().spanId === 'S1').eq(true);
+            expect(receivedSpan.context().parentSpanId).eq('P1');
+            expect(receivedSpan.context().baggage['myKey']).eq('myVal');
+            expect(receivedSpan.context().baggage['mylowercasekey']).eq('myval');
         });
 
         it('should create server span as a non-sharable span if tracer is in dualspan mode and context is extracted', () => {

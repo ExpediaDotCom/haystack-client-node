@@ -42,12 +42,25 @@ export default class TextMapPropagator implements Propagator {
 
     extract(carrier: any): SpanContext {
         const baggage = {};
+        let traceId = '';
+        let spanId = '';
+        let parentSpanId = '';
+
         for (const key in carrier) {
-            if (carrier.hasOwnProperty(key) && key.indexOf(this._opts.baggageKeyPrefix()) === 0) {
-                const keySansPrefix = key.substring(this._opts.baggageKeyPrefix().length);
-                baggage[keySansPrefix] = this._codex.decode(carrier[key]);
-            }
+            if (carrier.hasOwnProperty(key)) {
+                 const lcKey = key.toLowerCase();
+                 if (lcKey.indexOf(this._opts.baggageKeyPrefix().toLowerCase()) === 0) {
+                 const keySansPrefix = key.substring(this._opts.baggageKeyPrefix().length);
+                 baggage[keySansPrefix] = this._codex.decode(carrier[key]);
+              } else if (lcKey === this._opts.traceIdKey().toLowerCase()) {
+                 traceId = carrier[key];
+              } else if (lcKey === this._opts.spanIdKey().toLowerCase()) {
+                 spanId = carrier[key];
+              } else if (lcKey === this._opts.parentSpanIdKey().toLowerCase()) {
+                 parentSpanId = carrier[key];
+              }
+           }
         }
-        return new SpanContext(carrier[this._opts.traceIdKey()], carrier[this._opts.spanIdKey()], carrier[this._opts.parentSpanIdKey()], baggage);
+        return new SpanContext(traceId, spanId, parentSpanId, baggage);
     }
 }
