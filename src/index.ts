@@ -27,8 +27,12 @@ import { DispatcherConfig } from './dispatchers/dispatcher-config';
 import Configuration from './configuration';
 import { Logger } from './logger';
 import { TracerConfig } from './tracer-config';
+import PropagationRegistry from './propagators/propagation_registry';
+import { PropagatorOpts } from './propagators/propagator';
 
 import * as opentracing from 'opentracing';
+import TextMapPropagator from './propagators/textmap_propagator';
+import DefaultCodex from './propagators/default_codex';
 
 export {
     Configuration,
@@ -43,7 +47,11 @@ export {
     HttpCollectorDispatcher,
     DispatcherConfig,
     opentracing,
-    Logger
+    Logger,
+    PropagationRegistry,
+    PropagatorOpts,
+    TextMapPropagator,
+    DefaultCodex
 };
 
 module.exports = {
@@ -56,5 +64,9 @@ module.exports = {
     InMemoryDispatcher,
     FileDispatcher,
     AgentDispatcher,
-    opentracing
+    opentracing,
+    PropagationRegistry,
+    PropagatorOpts,
+    TextMapPropagator,
+    DefaultCodex
 };

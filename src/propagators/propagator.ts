@@ -17,10 +17,21 @@
 import SpanContext from '../span_context';
 
 export class PropagatorOpts {
-    _traceIdKey: string;
-    _spanIdKey: string;
-    _parentSpanIdKey: string;
-    _baggageKeyPrefix: string;
+    private _traceIdKey: string;
+    private _spanIdKey: string;
+    private _parentSpanIdKey: string;
+    private _baggageKeyPrefix: string;
+
+    constructor(traceIdKey: string = 'Trace-ID',
+                spanIdKey: string = 'Span-ID',
+                parentSpanIdKey: string = 'Parent-ID',
+                baggageKeyPrefix: string = 'Baggage-') {
+
+        this._traceIdKey = traceIdKey;
+        this._spanIdKey = spanIdKey;
+        this._parentSpanIdKey = parentSpanIdKey;
+        this._baggageKeyPrefix = baggageKeyPrefix;
+    }
 
     traceIdKey(): string {
         return this._traceIdKey || 'Trace-ID';

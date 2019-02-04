@@ -21,15 +21,12 @@ import {Dispatcher} from './dispatchers/dispatcher';
 import Span from './span';
 import SpanContext from './span_context';
 import NoopDispatcher from './dispatchers/noop';
-import { Logger, NullLogger } from './logger';
+import {Logger, NullLogger} from './logger';
 import Utils from './utils';
 import PropagationRegistry from './propagators/propagation_registry';
-import TextMapPropagator from './propagators/textmap_propagator';
-import URLCodex from './propagators/url_codex';
 import StartSpanFields from './start_span_fields';
-import BinaryPropagator from './propagators/binary_propagator';
-import { TracerConfig } from './tracer-config';
-import { Generator, UUIDGenerator } from './generators';
+import {TracerConfig} from './tracer-config';
+import {Generator, UUIDGenerator} from './generators';
 
 export default class Tracer extends opentracing.Tracer {
     _serviceName: string;
@@ -45,16 +42,14 @@ export default class Tracer extends opentracing.Tracer {
                 commonTags: { [key: string]: any } = {},
                 logger: Logger = new NullLogger(),
                 idGenerator: Generator = new UUIDGenerator(),
-                useDualSpanMode: boolean = false) {
+                useDualSpanMode: boolean = false,
+                propagationRegistry: PropagationRegistry = PropagationRegistry.default()) {
         super();
         this._commonTags = commonTags || {};
         this._serviceName = serviceName;
         this._dispatcher = dispatcher;
         this._logger = logger;
-        this._registry = new PropagationRegistry();
-        this._registry.register(opentracing.FORMAT_TEXT_MAP, new TextMapPropagator());
-        this._registry.register(opentracing.FORMAT_BINARY, new BinaryPropagator());
-        this._registry.register(opentracing.FORMAT_HTTP_HEADERS, new TextMapPropagator(new URLCodex()));
+        this._registry = propagationRegistry;
         this._idGenerator = idGenerator;
         this._useDualSpanMode = useDualSpanMode;
     }
@@ -188,7 +183,8 @@ export default class Tracer extends opentracing.Tracer {
         return ctx;
     }
 
-    static initTracer(config: TracerConfig): opentracing.Tracer {
+    static initTracer(config: TracerConfig,
+                      propagationRegistry: PropagationRegistry = PropagationRegistry.default()): opentracing.Tracer {
         if (config.disable) {
             return new opentracing.Tracer();
         }
@@ -202,6 +198,7 @@ export default class Tracer extends opentracing.Tracer {
         if (config.logger) {
             config.logger.info(`Initializing Haystack Tracer with ${dispatcher.name()}`);
         }
-        return new Tracer(config.serviceName, dispatcher, config.commonTags, config.logger, config.idGenerator);
+        return new Tracer(config.serviceName, dispatcher, config.commonTags, config.logger,
+            config.idGenerator, config.useDualSpanMode, propagationRegistry);
     }
 }
