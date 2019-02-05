@@ -25,4 +25,5 @@ export interface TracerConfig {
     commonTags?: { [key: string]: any };
     dispatcher?: DispatcherConfig;
     idGenerator?: Generator;
+    useDualSpanMode?: boolean;
 }

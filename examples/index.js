@@ -19,7 +19,10 @@
 
 /// first do `npm install haystack-client` and replace '../dist/index' with 'haystack-client'
 const initTracer = require('../dist/index').initTracer;
-const SpanContext = require('../dist/index').SpanContext;
+const PropagationRegistry = require('../dist/index').PropagationRegistry;
+const TextMapPropagator = require('../dist/index').TextMapPropagator;
+const DefaultCodex = require('../dist/index').DefaultCodex;
+const PropagatorOpts = require('../dist/index').PropagatorOpts;
 
 const opentracing = require('opentracing');
 const MyLogger = require('./logger');
@@ -52,8 +55,14 @@ const config = {
     logger: logger
 };
 
+/// ability to use custom propagation headers if needed
+const propagation = PropagationRegistry.default()
+  .register(opentracing.FORMAT_HTTP_HEADERS,
+            new TextMapPropagator(new DefaultCodex(),
+                                  new PropagatorOpts('X-Trace-ID', 'X-Span-ID', 'X-Parent-ID')));
+
 /// initialize the tracer only once at the time of your service startup
-const tracer = initTracer(config);
+const tracer = initTracer(config, propagation);
 
 /// now create a span, for e.g. at the time of incoming REST call.
 /// Make sure to add SPAN_KIND tag. Possible values are 'server' or 'client'.
@@ -65,15 +74,15 @@ const tracer = initTracer(config);
 const serverSpan = tracer
     .startSpan('/foo', {
         childOf: tracer.extract(opentracing.FORMAT_HTTP_HEADERS, {
-            'Trace-ID': '1848fadd-fa16-4b3e-8ad1-6d73339bbee7',
-            'Span-ID': '7a7cc5bf-796e-4527-9b42-13ae5766c6fd',
-            'Parent-ID': 'e96de653-ad6e-4ad5-b437-e81fd9d2d61d'
+            'X-Trace-ID': '1848fadd-fa16-4b3e-8ad1-6d73339bbee7',
+            'X-Span-ID': '7a7cc5bf-796e-4527-9b42-13ae5766c6fd',
+            'X-Parent-ID': 'e96de653-ad6e-4ad5-b437-e81fd9d2d61d'
         }),
         tags: {
             'span.kind': 'server',
             'http.method': 'GET'
         }
-    })
+    });
 // you can add more tags on server span later in the workflow
 serverSpan.setTag(opentracing.Tags.ERROR, true);
 
