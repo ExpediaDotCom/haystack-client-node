@@ -14,7 +14,7 @@
  *       limitations under the License.
  */
 
-import * as grpc from 'grpc';
+import * as grpc from '@grpc/grpc-js';
 const services  = require('../proto_idl_codegen/agent/spanAgent_grpc_pb');
 import {Dispatcher} from './dispatcher';
 import Span from '../span';

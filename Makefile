@@ -52,8 +52,8 @@ idl_codegen:
 	mkdir src/proto_idl_codegen
 	git submodule init -- ./haystack-idl
 	git submodule update
-	./node_modules/grpc-tools/bin/protoc -I haystack-idl/proto --plugin=protoc-gen-grpc=./node_modules/grpc-tools/bin/grpc_node_plugin --js_out=import_style=commonjs,binary:./src/proto_idl_codegen --grpc_out=./src/proto_idl_codegen haystack-idl/proto/span.proto
-	./node_modules/grpc-tools/bin/protoc -I haystack-idl/proto --plugin=protoc-gen-grpc=./node_modules/grpc-tools/bin/grpc_node_plugin --js_out=import_style=commonjs,binary:./src/proto_idl_codegen --grpc_out=./src/proto_idl_codegen haystack-idl/proto/agent/spanAgent.proto
+	./node_modules/grpc-tools/bin/protoc -I haystack-idl/proto --plugin=protoc-gen-grpc=./node_modules/grpc-tools/bin/grpc_node_plugin --js_out=import_style=commonjs,binary:./src/proto_idl_codegen --grpc_out=generate_package_definition:./src/proto_idl_codegen haystack-idl/proto/span.proto
+	./node_modules/grpc-tools/bin/protoc -I haystack-idl/proto --plugin=protoc-gen-grpc=./node_modules/grpc-tools/bin/grpc_node_plugin --js_out=import_style=commonjs,binary:./src/proto_idl_codegen --grpc_out=generate_package_definition:./src/proto_idl_codegen haystack-idl/proto/agent/spanAgent.proto
 
 .PHONY: npm_install
 npm_install:
