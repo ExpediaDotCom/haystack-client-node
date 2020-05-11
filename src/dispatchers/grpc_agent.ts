@@ -27,8 +27,8 @@ export default class RemoteDispatcher implements Dispatcher {
 
     constructor(agentHost: string = 'haystack-agent', agentPort: number = 35000, logger: Logger = new NullLogger()) {
         logger.info(`Initializing the remote grpc agent dispatcher, connecting at ${agentHost}:${agentPort}`);
-        const SpanAgentClient = grpc.makeGenericClientConstructor(SpanAgent, 'SpanAgentService');
-        this._client = new SpanAgentClient(`${agentHost}:${agentPort}`, grpc.credentials.createInsecure());
+        const spanAgentClient = grpc.makeGenericClientConstructor(SpanAgent, 'SpanAgentService');
+        this._client = new spanAgentClient(`${agentHost}:${agentPort}`, grpc.credentials.createInsecure());
         this._logger = logger;
     }
 
