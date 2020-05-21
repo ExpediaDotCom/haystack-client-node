@@ -69,3 +69,4 @@ dist/
 *.ipr
 *.iws
 ws2/
+.npmrc
