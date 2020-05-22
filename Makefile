@@ -33,8 +33,8 @@ integration_tests:
 		--network=sandbox_default \
 		-v $(PWD):/ws \
 		-w /ws \
-		node:6-alpine \
-		/bin/sh -c 'mkdir -p ws2 && cp -a src tests package.json  tsconfig.json ws2/ && cd ws2 && npm i && ./node_modules/mocha/bin/mocha -r ./node_modules/ts-node/register tests/integration/**/*.ts'
+		node:12.16.3-alpine \
+		/bin/sh -c 'mkdir -p ws2 && apk --no-cache add python make g++ && cp -a src tests package.json  tsconfig.json ws2/ && cd ws2 && npm i && ./node_modules/mocha/bin/mocha -r ./node_modules/ts-node/register --exit tests/integration/**/*.ts'
 	docker-compose -f integration-tests/docker-compose.yml -p sandbox stop
 
 .PHONY: compile
@@ -52,8 +52,8 @@ idl_codegen:
 	mkdir src/proto_idl_codegen
 	git submodule init -- ./haystack-idl
 	git submodule update
-	./node_modules/grpc-tools/bin/protoc -I haystack-idl/proto --plugin=protoc-gen-grpc=./node_modules/grpc-tools/bin/grpc_node_plugin --js_out=import_style=commonjs,binary:./src/proto_idl_codegen --grpc_out=./src/proto_idl_codegen haystack-idl/proto/span.proto
-	./node_modules/grpc-tools/bin/protoc -I haystack-idl/proto --plugin=protoc-gen-grpc=./node_modules/grpc-tools/bin/grpc_node_plugin --js_out=import_style=commonjs,binary:./src/proto_idl_codegen --grpc_out=./src/proto_idl_codegen haystack-idl/proto/agent/spanAgent.proto
+	./node_modules/grpc-tools/bin/protoc -I haystack-idl/proto --plugin=protoc-gen-grpc=./node_modules/grpc-tools/bin/grpc_node_plugin --js_out=import_style=commonjs,binary:./src/proto_idl_codegen --grpc_out=generate_package_definition:./src/proto_idl_codegen haystack-idl/proto/span.proto
+	./node_modules/grpc-tools/bin/protoc -I haystack-idl/proto --plugin=protoc-gen-grpc=./node_modules/grpc-tools/bin/grpc_node_plugin --js_out=import_style=commonjs,binary:./src/proto_idl_codegen --grpc_out=generate_package_definition:./src/proto_idl_codegen haystack-idl/proto/agent/spanAgent.proto
 
 .PHONY: npm_install
 npm_install:
