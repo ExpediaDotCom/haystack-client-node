@@ -15,11 +15,12 @@
  */
 
 import * as grpc from '@grpc/grpc-js';
-import { SpanAgent } from '../proto_idl_codegen/agent/spanAgent_grpc_pb';
+import * as spanAgentPackageDefinition from '../proto_idl_codegen/agent/spanAgent_grpc_pb';
 import {Dispatcher} from './dispatcher';
 import Span from '../span';
 import { Logger, NullLogger } from '../logger';
 import Utils from '../utils';
+import {ServiceClientConstructor} from '@grpc/grpc-js/build/src/make-client';
 
 export default class RemoteDispatcher implements Dispatcher {
     _client: any;
@@ -27,8 +28,8 @@ export default class RemoteDispatcher implements Dispatcher {
 
     constructor(agentHost: string = 'haystack-agent', agentPort: number = 35000, logger: Logger = new NullLogger()) {
         logger.info(`Initializing the remote grpc agent dispatcher, connecting at ${agentHost}:${agentPort}`);
-        const spanAgentClient = grpc.makeGenericClientConstructor(SpanAgent, 'SpanAgentService');
-        this._client = new spanAgentClient(`${agentHost}:${agentPort}`, grpc.credentials.createInsecure());
+        const protoDescriptor = grpc.loadPackageDefinition(spanAgentPackageDefinition) as {[index: string]: ServiceClientConstructor};
+        this._client = new protoDescriptor.SpanAgent(`${agentHost}:${agentPort}`, grpc.credentials.createInsecure());
         this._logger = logger;
     }
 

@@ -30,7 +30,7 @@
     "@types/node": "^12.12.42",
     "@types/request": "2.48.0",
     "chai": "^3.5.0",
-    "grpc-tools": "^1.8.1",
+    "grpc-tools": "^1.9.0",
     "kafka-node": "2.6.1",
     "mocha": "^7.1.2",
     "npm-registry-package-info": "1.0.5",
