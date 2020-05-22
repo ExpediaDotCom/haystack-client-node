@@ -34,7 +34,7 @@ integration_tests:
 		-v $(PWD):/ws \
 		-w /ws \
 		node:12.16.3-alpine \
-		/bin/sh -c 'mkdir -p ws2 && apk --no-cache add python make g++ && cp -a src tests package.json  tsconfig.json ws2/ && cd ws2 && npm i && ./node_modules/mocha/bin/mocha -r ./node_modules/ts-node/register tests/integration/**/*.ts'
+		/bin/sh -c 'mkdir -p ws2 && apk --no-cache add python make g++ && cp -a src tests package.json  tsconfig.json ws2/ && cd ws2 && npm i && ./node_modules/mocha/bin/mocha -r ./node_modules/ts-node/register --exit tests/integration/**/*.ts'
 	docker-compose -f integration-tests/docker-compose.yml -p sandbox stop
 
 .PHONY: compile
