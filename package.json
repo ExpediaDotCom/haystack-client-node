@@ -17,8 +17,8 @@
     "Haystack <haystack@expedia.com>"
   ],
   "dependencies": {
-    "@grpc/grpc-js": "^1.0.3",
-    "google-protobuf": "^3.0.0",
+    "@grpc/grpc-js": "^1.1.5",
+    "google-protobuf": "^3.13.0",
     "opentracing": "^0.14.0",
     "request": "^2.88.0",
     "uuid": "^3.2.1"
